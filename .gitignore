@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# project-specific
+/handoff/
+/qa/
+/.cc-logs/
+/.tmp-app/
+/tmp-app/
+/public/maplibre/

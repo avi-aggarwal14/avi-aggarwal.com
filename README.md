@@ -1,30 +1,25 @@
-# avi-aggarwal.com
+# aviaggarwal
 
-One-screen bento portfolio. The homepage is a switchboard, not a scroll:
-four full-bleed tiles route to everything, separated by 1px hairlines,
-zero gaps, zero rounded corners.
-
-Built to `RECIPE-02-bento-portfolio.md` — build notes and the traps hit are
-in [`docs/RECIPE-BUILD-LOG.md`](docs/RECIPE-BUILD-LOG.md).
-
-## Run
-
-```bash
-npm install
-npm run dev
-```
-
-## Fill in your content
-
-Everything written on the site lives in **`src/content/site.ts`** — hero
-lines, tile titles, the three section pages, email. All of it is placeholder;
-none of it requires opening a component.
-
-Tile imagery lives in `public/tiles/` (`past-work.avif`, `founder.avif`) —
-currently procedural placeholders. Replace with real photography per the art
-direction in the recipe's §9: keep the bottom-left third quiet for the title.
+Source for Avi Aggarwal's personal site: founder of [hypjam](https://hypjam.com), UGC creator, Youth Ambassador for Barnet.
 
 ## Stack
+Next.js 16 (App Router) · React 19 · Tailwind CSS v4 · Motion + motion-primitives · next-themes · MapLibre GL · Vercel.
 
-Next 16.3.0 · React 19.2.8 · Tailwind 4.3.3 · GSAP 3.15.0 (SplitText) ·
-Motion 12.43.0 · Switzer + Geist Mono
+## What's in it
+- Work, projects, education, talks, volunteering and awards, all driven by one typed content file: `src/content/site-content.ts`.
+- Click any date for a timeline of that year, or any location for a map of everything that happened there.
+- Project cards open into video and image previews.
+- A ⌘K command bar, a custom cursor, and five themes. Three of them (Sunny, Rain and Night) are ambient, with looping video and sound generated with [dare-mcp-server](https://github.com/avi-aggarwal14/dare-mcp-server).
+
+## Editing content
+Change `src/content/site-content.ts` and the files in `public/`. Entries with `wip: true` stay hidden until you flip them.
+
+## Develop
+```bash
+pnpm install
+pnpm dev        # http://localhost:3000
+pnpm build && pnpm start
+```
+
+## Credits
+Design inspired by [jmetrikat.com](https://jmetrikat.com) by Jannis Metrikat; rebuilt from scratch with original content, artwork and media. Wordmark set in Bricolage Grotesque (SIL Open Font License).

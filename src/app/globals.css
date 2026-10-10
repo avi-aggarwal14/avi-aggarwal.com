@@ -1,152 +1,79 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
-/* ============================================================================
-   RECIPE-02 — Full-bleed bento portfolio.
-   Tokens verbatim from §4. Contrast ratios in comments are WCAG 2.1,
-   verified in the recipe against #080808 / #EDEBE7 / #FF5A3C.
-   ========================================================================== */
+/* Dark utilities apply for both the dark and the night theme */
+@custom-variant dark (&:is(.dark *, .night *));
 
-@theme inline {
-  --font-display: var(--font-switzer);
-  --font-mono: var(--font-geist-mono);
-
-  --color-bg:       #080808;
-  --color-bg-tile:  #0C0C0D;
-
-  /* Contrast vs #080808 verified — see §4.1 */
-  --color-fg:       #FAFAFA;   /* 19.19:1 */
-  --color-fg-mid:   #7C7C82;   /*  4.83:1 — headline line 2 */
-  --color-fg-muted: #9C9CA3;   /*  7.34:1 — body copy */
-  --color-fg-dim:   #8A8A91;   /*  5.84:1 — mono labels */
-
-  --color-line:     rgba(255, 255, 255, 0.09);
-
-  --color-accent:      #FF5A3C;
-  --color-accent-deep: #E8431F;
-  /* Text ON the accent tile must be near-black. White on #FF5A3C is 2.97:1 — fails. */
-  --color-on-accent:      #0A0A0A;  /* 6.39:1 on #FF5A3C ✓ */
-  --color-on-accent-dim:  #3A1408;  /* subhead on accent */
-
-  /* Inverted tile */
-  --color-invert-bg:   #EDEBE7;
-  --color-invert-fg:   #101010;  /* 15.98:1 ✓ */
-  --color-invert-dim:  #6B6862;  /*  4.66:1 ✓ */
-  --color-invert-line: rgba(0, 0, 0, 0.12);
-
-  --radius: 0px;
-  --nav-h: 80px;
-}
-
-:root { color-scheme: dark; }
-html { background: var(--color-bg); color: var(--color-fg); -webkit-font-smoothing: antialiased; }
-
-/* §2.1 — border-radius 0, globally. Every tile, button and field is a hard
-   rectangle. Belt-and-braces: kill any utility that slips through. */
-* { border-radius: 0 !important; }
-
-/* ── Type primitives ── */
-
-.t-hero {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(2.5rem, 5.6vw, 6.5rem);
-  line-height: 0.94;
-  letter-spacing: -0.035em;
-}
-
-.t-tile {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(1.5rem, 2.35vw, 2.9rem);
-  line-height: 1.02;
-  letter-spacing: -0.03em;
-}
-
-.t-label {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;          /* 10px */
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--color-fg-dim);
-}
-
-.t-body {
-  font-family: var(--font-display);
-  font-size: 0.875rem;          /* 14px */
-  line-height: 1.6;
-  color: var(--color-fg-muted);
-  max-width: 32ch;
-}
-
-.t-sub {
-  font-family: var(--font-display);
-  font-size: 0.8125rem;         /* 13px */
-  line-height: 1.45;
-  color: var(--color-fg-muted);
-}
-
-/* ── §7.1 base tracks ──
-   In the STYLESHEET, not inline styles: an inline `style` attribute outranks
-   every class rule, so the :has() hover states below could never apply. The
-   step-5 gate caught exactly that — zero track movement on hover. */
-
-.bento-root   { grid-template-columns: 38fr 62fr; }   /* intro | right   */
-.bento-row-a  { grid-template-columns: 58fr 42fr; }   /* past | stack    */
-.bento-col-a  { grid-template-rows:    50fr 50fr; }   /* current | row   */
-.bento-row-b  { grid-template-columns: 56fr 44fr; }   /* founder | mail  */
-
-/* ── §7.3 Hover-expand — pure CSS, zero JS ──
-   Track counts identical between states, all tracks fr — the formal
-   interpolation constraint. One `auto` silently kills the transition. */
-
-.bento-row,
-.bento-col {
-  transition: grid-template-columns 620ms cubic-bezier(0.22, 1, 0.36, 1),
-              grid-template-rows    620ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.bento-row:has(> :nth-child(1):hover) { grid-template-columns: 68fr 32fr; }
-.bento-row:has(> :nth-child(2):hover) { grid-template-columns: 44fr 56fr; }
-
-.bento-col:has(> :nth-child(1):hover) { grid-template-rows: 62fr 38fr; }
-.bento-col:has(> :nth-child(2):hover) { grid-template-rows: 38fr 62fr; }
-
-/* §11 — the bento does not survive below 900px. Single column, hover off. */
-@media (max-width: 899px) {
-  .bento-root,
-  .bento-row,
-  .bento-col {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: none !important;
-    transition: none;
+/* ---------- base ---------- */
+@layer base {
+  /* Tailwind v4 changed the default border colour to currentColor; the site keeps v3's gray-200 */
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
   }
-  .bento-row > *, .bento-col > * { min-height: 42dvh; }
-  .bento-root { height: auto !important; }
-  /* Hairlines that were vertical become horizontal in a stack. */
-  .bento-row > .border-l, .bento-col > .border-l {
-    border-left: 0 !important;
-    border-top: 1px solid var(--color-line);
+
+  :focus-visible { outline: 1.5px solid #a1a1aa99; outline-offset: 2px; border-radius: 2px; }
+  :is(.dark, .night) :focus-visible { outline-color: #71717ab3; }
+
+  body {
+    font-family: Menlo, Monaco, "Courier New", monospace;
+    font-size: .875rem;
+    line-height: 1.5;
   }
 }
 
-/* 900–1279 middle band: intro on top, tiles 2×2 below (§11). */
-@media (min-width: 900px) and (max-width: 1279px) {
-  .bento-root { grid-template-columns: 1fr !important; height: auto !important; }
-  .bento-root > * { min-height: 46dvh; }
+/* ---------- document ---------- */
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
+
+:root { --border: #d4d4d880; scrollbar-color: var(--border) transparent; }
+:root:is(.dark, .night) { --border: #3f3f4680; scrollbar-color: var(--border) transparent; }
+
+::selection { color: inherit; background-color: #0000001a; }
+:is(.dark, .night) ::selection { color: inherit; background-color: #ffffff1a; }
+
+/* scroll lock while any popup/dialog is open (toggled by the popup shell) */
+body.popup-open { touch-action: none; height: 100dvh; overflow: hidden; }
+
+/* custom cursor: hide the native cursor unless the custom one is disabled */
+body:not(.regular-cursor-enabled) a,
+body:not(.regular-cursor-enabled),
+body:not(.regular-cursor-enabled) button,
+body:not(.regular-cursor-enabled) .cursor-zoom-in,
+body:not(.regular-cursor-enabled) .cursor-pointer { cursor: none !important; }
+
+/* ---------- squircles ---------- */
+@utility squircle-panel { border-radius: var(--radius-2xl); }
+@utility squircle-thumb { border-radius: var(--radius-xl); }
+@utility squircle-thumb-t { border-top-left-radius: var(--radius-xl); border-top-right-radius: var(--radius-xl); }
+
+@supports (corner-shape: squircle) {
+  .squircle-panel   { corner-shape: superellipse(1.2); border-radius: var(--radius-3xl); }
+  .squircle-thumb   { corner-shape: superellipse(1.2); border-radius: 1.25rem; }
+  .squircle-thumb-t { corner-shape: superellipse(1.2); border-top-left-radius: 1.25rem; border-top-right-radius: 1.25rem; }
 }
 
-/* §12 a11y — hairlines are ~1.3:1 and cannot serve as a focus indicator. */
-a:focus-visible,
-button:focus-visible {
-  outline: 1px solid var(--color-accent);
-  outline-offset: 2px;
+/* ---------- section highlight flash (scroll-to target) ---------- */
+@keyframes highlight-fill {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.highlight-animation { position: relative; }
+.highlight-animation:is(.dark *, .night *) { --highlight-color: #ffffff0d; }
+.highlight-animation::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-color: var(--highlight-color, #0000000d);
+  border-radius: inherit; corner-shape: inherit;
+  pointer-events: none;
+  animation: highlight-fill 1s ease-out forwards;
 }
 
+/* ---------- motion safety ---------- */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+  *, ::before, ::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
   }
-  .bento-row, .bento-col { transition: none; }
-  .bento-row:has(:hover), .bento-col:has(:hover) { grid-template-columns: unset; grid-template-rows: unset; }
 }
