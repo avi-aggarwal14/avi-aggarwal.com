@@ -137,7 +137,7 @@ export interface SiteContent {
 
 export const siteContent: SiteContent = {
   site: {
-    url: "https://aviaggarwal.vercel.app",
+    url: "https://avi-aggarwal.com",
     title: "Avi Aggarwal",
     titleTemplate: "%s | Avi Aggarwal",
     description: "Avi Aggarwal runs hypjam, a UGC agency in London. He is CMO at Ignura and Yummers, a UGC creator for Cluely's Dare and one of Barnet's two elected Youth Ambassadors.",
@@ -248,7 +248,7 @@ export const siteContent: SiteContent = {
     }
   ],
   ai: {
-    prompt: "Summarize Avi Aggarwal based on aviaggarwal.vercel.app - his background, work, and key projects",
+    prompt: "Summarize Avi Aggarwal based on avi-aggarwal.com - his background, work, and key projects",
     providers: [
       {
         id: "chatgpt",
