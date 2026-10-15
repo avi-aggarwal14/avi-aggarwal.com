@@ -1107,7 +1107,11 @@ export const siteContent: SiteContent = {
       "Startups"
     ],
     extraSameAs: [
-      "https://www.npmjs.com/~_avi.ag"
+      "https://www.npmjs.com/~_avi.ag",
+      "https://dev.to/aviaggarwal",
+      "https://hashnode.com/@aviaggarwal",
+      "https://medium.com/@aviaggarwal.hypjam",
+      "https://devpost.com/avi-aggarwal14"
     ],
     sourceCode: [
       {
