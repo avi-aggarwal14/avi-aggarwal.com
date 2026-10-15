@@ -1,6 +1,6 @@
 # aviaggarwal
 
-Source for Avi Aggarwal's personal site: founder of [hypjam](https://hypjam.com), UGC creator, Youth Ambassador for Barnet.
+Source for [avi-aggarwal.com](https://avi-aggarwal.com), the personal site of Avi Aggarwal: founder of [hypjam](https://hypjam.com), co-founder of [Ignura](https://ignura.com), and author of [dare-mcp-server](https://github.com/avi-aggarwal14/dare-mcp-server).
 
 ## Stack
 Next.js 16 (App Router) · React 19 · Tailwind CSS v4 · Motion + motion-primitives · next-themes · MapLibre GL · Vercel.
