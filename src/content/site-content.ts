@@ -119,7 +119,7 @@ export interface SiteContent {
   /** Technical SEO: the IndexNow key (served at /<key>.txt) and the facts behind the JSON-LD graph (ids resolve into work, projects and locations). */
   seo: {
     indexNowKey: string;
-    /** ProfilePage.dateCreated (YYYY-MM-DD) */
+    /** ProfilePage.dateCreated (ISO date-time with timezone) */
     profilePageCreated: string;
     /** work entry id of the Organization in Person.worksFor; its title is the Person.jobTitle */
     worksFor: string;
@@ -1090,7 +1090,7 @@ export const siteContent: SiteContent = {
   },
   seo: {
     indexNowKey: "1b36f24e9252686419428c0611dd423b",
-    profilePageCreated: "2026-10-10",
+    profilePageCreated: "2026-10-10T21:00:00+01:00",
     worksFor: "work6",
     affiliations: [
       "work8",

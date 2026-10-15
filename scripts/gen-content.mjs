@@ -111,7 +111,7 @@ if (missing.size) throw new Error(`missing files:\n  ${[...missing].join('\n  ')
   const seo = data.seo;
   if (typeof data.site.homeTitle !== 'string' || !data.site.homeTitle.trim()) throw new Error('site.homeTitle is required');
   if (!seo || !/^[a-f0-9]{32}$/.test(seo.indexNowKey)) throw new Error('seo.indexNowKey must be 32 hex characters');
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(seo.profilePageCreated)) throw new Error('seo.profilePageCreated must be an ISO date (YYYY-MM-DD)');
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2})$/.test(seo.profilePageCreated)) throw new Error('seo.profilePageCreated must be an ISO date-time with timezone (Google rejects a bare date)');
   const liveWork = new Set(data.work.filter((w) => !w.wip).map((w) => w.id));
   for (const id of [seo.worksFor, ...(seo.affiliations ?? [])]) if (!liveWork.has(id)) throw new Error(`seo: "${id}" is not a live work entry`);
   if (!data.locations[seo.homeLocationId]) throw new Error(`seo.homeLocationId: unknown location "${seo.homeLocationId}"`);
@@ -289,7 +289,7 @@ export interface SiteContent {
   /** Technical SEO: the IndexNow key (served at /<key>.txt) and the facts behind the JSON-LD graph (ids resolve into work, projects and locations). */
   seo: {
     indexNowKey: string;
-    /** ProfilePage.dateCreated (YYYY-MM-DD) */
+    /** ProfilePage.dateCreated (ISO date-time with timezone) */
     profilePageCreated: string;
     /** work entry id of the Organization in Person.worksFor; its title is the Person.jobTitle */
     worksFor: string;
