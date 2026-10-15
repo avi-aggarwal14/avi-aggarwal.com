@@ -17,7 +17,7 @@ export function ProjectThumbnail({ project }: { project: Project }) {
       <div className="relative size-full">
         <Image
           src={`${assets.projectBackgroundsDir}/${project.thumb.color}.png`}
-          alt={`${project.name} background`}
+          alt={`${project.name} project`}
           width={1000}
           height={1000}
           draggable={false}

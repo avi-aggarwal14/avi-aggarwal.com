@@ -234,12 +234,6 @@ write('public/profile.png', await sharp(AVATAR).resize(512, 512).png({ compressi
 // 5. Project card art: monochrome glyph + wordmark, centred in the 1200x630 frame
 // ---------------------------------------------------------------------------
 const iconPath = (file) => /<path[^>]*\sd="([^"]+)"/.exec(fs.readFileSync(path.join(SRC, file), 'utf8'))[1];
-const goose = fs.readFileSync(path.join(SRC, 'goose.svg'), 'utf8');
-const gooseBody = /<path d="(M120 250[^"]+)"/.exec(goose)[1];
-const gooseBeak = /<path d="(M420 144[^"]+)"/.exec(goose)[1];
-const astra = fs.readFileSync(path.join(SRC, 'astrahack.svg'), 'utf8');
-const astraStar = /<path d="([^"]+)" fill="#FFD45C"/.exec(astra)[1];
-const astraMouth = /<path d="(M27\.5[^"]+)"/.exec(astra)[1];
 
 /**
  * Traces a pixel-art icon (1-unit rects, "M8 1h1v1h-1z") into one monochrome outline path: every filled
@@ -303,32 +297,7 @@ const flame = tracePixelArt('public/icons/ignura.svg', ['#ffe58f']);
 console.log(`ignura flame traced: ${flame.w}x${flame.h} cells, ${flame.d.length} chars`);
 
 const GLYPHS = {
-  play: { viewBox: '0 0 100 100', w: 100, h: 100, svg: `<path fill="black" fill-rule="evenodd" d="M50 2a48 48 0 1 0 0 96a48 48 0 1 0 0-96ZM39 29v42l36-21Z"/>` },
   mcp: { viewBox: '0 0 24 24', w: 24, h: 24, svg: `<path fill="black" d="${iconPath('modelcontextprotocol.svg')}"/>` },
-  goose: {
-    viewBox: '112 124 366 296',
-    w: 366,
-    h: 296,
-    svg: `<mask id="eye"><rect x="0" y="0" width="512" height="512" fill="white"/><circle cx="356" cy="158" r="13" fill="black"/></mask><g mask="url(#eye)"><path d="${gooseBody}" fill="black" stroke="black" stroke-width="7" stroke-linejoin="round"/><path d="${gooseBeak}" fill="black" stroke="black" stroke-width="3"/></g>`,
-  },
-  nodes: {
-    viewBox: '0 0 100 100',
-    w: 100,
-    h: 100,
-    svg: `<g stroke="black" stroke-width="9" stroke-linecap="round" fill="none"><path d="M50 52V14M50 52L16 76M50 52L84 76"/></g><g fill="black"><circle cx="50" cy="12" r="12"/><circle cx="14" cy="78" r="12"/><circle cx="86" cy="78" r="12"/><circle cx="50" cy="52" r="15"/></g>`,
-  },
-  star: {
-    viewBox: '4 4 56 54',
-    w: 56,
-    h: 54,
-    svg: `<mask id="face"><rect x="0" y="0" width="64" height="64" fill="white"/><circle cx="26" cy="32" r="3" fill="black"/><circle cx="38.4" cy="32" r="3" fill="black"/><path d="${astraMouth}" stroke="black" stroke-width="3" stroke-linecap="round" fill="none"/></mask><path d="${astraStar}" fill="black" stroke="black" stroke-width="3" stroke-linejoin="round" mask="url(#face)"/>`,
-  },
-  film: {
-    viewBox: '0 0 120 90',
-    w: 120,
-    h: 90,
-    svg: `<path fill="black" fill-rule="evenodd" d="M10 0h100a10 10 0 0 1 10 10v70a10 10 0 0 1-10 10H10A10 10 0 0 1 0 80V10A10 10 0 0 1 10 0ZM10 8h14v10H10ZM38 8h14v10H38ZM66 8h14v10H66ZM94 8h14v10H94ZM10 72h14v10H10ZM38 72h14v10H38ZM66 72h14v10H66ZM94 72h14v10H94ZM12 26h96v38H12Z"/>`,
-  },
   // Ignura: the pixel flame from public/icons/ignura.svg as one black silhouette (crisp edges keep the pixel look)
   flame: {
     viewBox: `${flame.minX} ${flame.minY} ${flame.w} ${flame.h}`,
@@ -345,15 +314,11 @@ const GLYPHS = {
   },
 };
 
+// [slug, glyph, text, glyph height as a multiple of the text size]; add a row per project card (slug = thumb.slug in the content JSON)
 const CARDS = [
   ['ignura', 'flame', 'Ignura', 1.08],
-  ['dare-ugc', 'play', 'UGC for Dare', 1],
   ['yummers', 'cloche', 'Yummers', 1],
   ['dare-mcp', 'mcp', 'dare-mcp-server', 1],
-  ['goose', 'goose', 'Goose', 1.08],
-  ['synapse', 'nodes', 'Synapse', 1],
-  ['astrahack', 'star', 'AstraHack', 1.08],
-  ['reel-toolkit', 'film', 'Reel toolkit', 0.875],
 ];
 const MAX_WIDTH = 0.55 * 1200;
 const GAP_RATIO = 30 / 96;
@@ -418,5 +383,4 @@ write(
   'public/icons/calendar.svg',
   `<svg ${XMLNS} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18"/><rect width="18" height="18" x="3" y="4" rx="2"/></svg>\n`,
 );
-write('public/icons/synapse.svg', `<svg ${XMLNS} viewBox="0 0 100 100" fill="currentColor">${GLYPHS.nodes.svg.replaceAll('"black"', '"currentColor"')}</svg>\n`);
 console.log('done');

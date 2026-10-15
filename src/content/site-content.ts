@@ -84,6 +84,8 @@ export interface SiteContent {
     url: string; title: string; titleTemplate: string; description: string;
     twitterCreator: string; ogImageAlt: string; locale: string;
     themeColorLight: string; themeColorDark: string;
+    /** the homepage <title>, used verbatim (absolute, no template); other routes keep titleTemplate */
+    homeTitle: string;
   };
   profile: {
     name: string; handle: string; role: string; about: string; email: string;
@@ -114,6 +116,23 @@ export interface SiteContent {
   footer: { copyright: string; credit?: { text: string; url: string }; socials: string[] };
   /** visitedCountries is a GeoJSON file built from map.visitedCountryCodes (scripts/gen-visited-countries.mjs) */
   map: { maplibreVersion: string; styles: { dark: string; light: string }; visitedCountries: string; visitedCountryCodes: string[] };
+  /** Technical SEO: the IndexNow key (served at /<key>.txt) and the facts behind the JSON-LD graph (ids resolve into work, projects and locations). */
+  seo: {
+    indexNowKey: string;
+    /** ProfilePage.dateCreated (YYYY-MM-DD) */
+    profilePageCreated: string;
+    /** work entry id of the Organization in Person.worksFor; its title is the Person.jobTitle */
+    worksFor: string;
+    /** work entry ids listed under Person.affiliation (membership only, no founder claims) */
+    affiliations: string[];
+    /** locations key of Person.homeLocation */
+    homeLocationId: string;
+    knowsAbout: string[];
+    /** absolute profile URLs added to Person.sameAs after the socials */
+    extraSameAs: string[];
+    /** SoftwareSourceCode blocks: the project's GitHub link is the codeRepository, its link the url */
+    sourceCode: { projectId: string; programmingLanguage: string; license: string }[];
+  };
   /** Asset configuration: paths and per-file rendering rules for the files in public/. */
   assets: {
     projectBackgroundsDir: string;
@@ -140,18 +159,19 @@ export const siteContent: SiteContent = {
     url: "https://avi-aggarwal.com",
     title: "Avi Aggarwal",
     titleTemplate: "%s | Avi Aggarwal",
-    description: "Avi Aggarwal runs hypjam, a UGC agency in London. He is CMO at Ignura and Yummers, a UGC creator for Cluely's Dare and one of Barnet's two elected Youth Ambassadors.",
+    description: "Avi Aggarwal is a founder in London. He runs hypjam, a UGC agency, co-founded Ignura and Yummers, and built the open-source dare-mcp-server.",
     twitterCreator: "@_avi_md",
-    ogImageAlt: "Avi Aggarwal - Founder & CMO",
+    ogImageAlt: "Avi Aggarwal, founder of hypjam",
     locale: "en_GB",
     themeColorLight: "#fafafa",
-    themeColorDark: "#18181b"
+    themeColorDark: "#18181b",
+    homeTitle: "Avi Aggarwal | Founder of hypjam, Co-Founder of Ignura"
   },
   profile: {
     name: "Avi Aggarwal",
     handle: "aviaggarwal",
     role: "Founder & CMO",
-    about: "I'm 15, and I build things and make videos. I run hypjam, a UGC agency in London, and I'm CMO at two startups, Ignura and Yummers. I also make UGC for Dare, Cluely's AI video app, after a week with their marketing team in New York. And I'm one of Barnet's two elected Youth Ambassadors. In October, Barnet's head teachers agreed to start testing my financial education resources in their schools.",
+    about: "I'm 15, and I build things. I run hypjam, a UGC agency in London, and I co-founded Ignura, a launch studio for apps, and Yummers, a food app. I spent a week with Cluely's marketing team in New York and worked as a founding engineer at 8x. I also wrote dare-mcp-server, an open-source MCP server that lets Claude generate AI video. Outside tech, I'm one of Barnet's two elected Youth Ambassadors, and in October the borough's head teachers agreed to start testing my financial education resources in their schools.",
     email: "avi@hypjam.com",
     avatar: "/profile.png",
     wordmark: "/generated/aviaggarwal.svg",
@@ -623,62 +643,6 @@ export const siteContent: SiteContent = {
       ]
     },
     {
-      id: "project6",
-      name: "UGC for Dare",
-      description: "Short-form UGC and AI video for Dare, Cluely's AI video app, posted to TikTok and Instagram.",
-      link: "https://www.tiktok.com/@_avi.md",
-      thumb: {
-        color: "pink",
-        slug: "dare-ugc"
-      },
-      videos: [
-        {
-          type: "direct",
-          url: "/projects/dare-ugc/reels-for-dare.mp4",
-          title: "Three reels for Dare"
-        },
-        {
-          type: "direct",
-          url: "/projects/dare-ugc/motion-editors-are-cooked.mp4",
-          title: "Motion editors are cooked"
-        },
-        {
-          type: "direct",
-          url: "/projects/dare-ugc/lamborghini-urus-spot.mp4",
-          title: "Lamborghini Urus spot, made with Dare for Cluely"
-        },
-        {
-          type: "direct",
-          url: "/projects/dare-ugc/youre-a-youtuber.mp4",
-          title: "You're a YouTuber??"
-        }
-      ],
-      links: [
-        {
-          url: "https://www.tiktok.com/@_avi.md",
-          logo: "/icons/tiktok.svg",
-          label: "TikTok"
-        },
-        {
-          url: "https://www.instagram.com/_avi.md/",
-          logo: "/icons/instagram.svg",
-          label: "Instagram"
-        }
-      ],
-      keywords: [
-        "ugc",
-        "dare",
-        "cluely",
-        "tiktok",
-        "instagram",
-        "reels",
-        "ai video",
-        "seedance",
-        "short-form"
-      ],
-      hide: false
-    },
-    {
       id: "project9",
       name: "Yummers",
       description: "Snap a dish, AI names it and gives it a rarity card for your collection. Coming soon to iPhone.",
@@ -747,163 +711,6 @@ export const siteContent: SiteContent = {
         "open source"
       ],
       hide: false
-    },
-    {
-      id: "project4",
-      name: "Goose",
-      description: "Accountability app that nags you, in character as a goose, until your tasks are done.",
-      link: "https://goose-lockin.vercel.app",
-      thumb: {
-        color: "green",
-        slug: "goose"
-      },
-      images: [
-        "/projects/goose/landing.jpg",
-        "/projects/goose/app.jpg"
-      ],
-      links: [
-        {
-          url: "https://goose-lockin.vercel.app",
-          logo: "/icons/goose.svg",
-          label: "App"
-        },
-        {
-          url: "https://github.com/avi-aggarwal14/8x-Mobile-Hack-EF",
-          logo: "/icons/github.svg",
-          label: "Repository"
-        },
-        {
-          url: "https://luma.com/t4j6h0br",
-          logo: "/icons/ef.png",
-          label: "8x Hackathon"
-        }
-      ],
-      keywords: [
-        "goose",
-        "pwa",
-        "claude api",
-        "vision",
-        "push notifications",
-        "google calendar",
-        "hackathon",
-        "8x",
-        "entrepreneurs first"
-      ],
-      hide: false
-    },
-    {
-      id: "project3",
-      name: "Synapse",
-      description: "Turns a store's Shopify and Google Analytics data into a weekly brief that ends in one move.",
-      link: "https://synapse-acceleration.vercel.app",
-      thumb: {
-        color: "yellow",
-        slug: "synapse"
-      },
-      hide: false,
-      images: [
-        "/projects/synapse/dashboard.jpg"
-      ],
-      links: [
-        {
-          url: "https://synapse-acceleration.vercel.app",
-          logo: "/icons/synapse.svg",
-          label: "Demo"
-        },
-        {
-          url: "https://github.com/avi-aggarwal14/Synapse---Pop_The_Bubble",
-          logo: "/icons/github.svg",
-          label: "Repository"
-        },
-        {
-          url: "https://www.popthebubblehack.co.uk",
-          logo: "/icons/link.svg",
-          label: "Pop the Bubble"
-        }
-      ],
-      keywords: [
-        "synapse",
-        "next.js",
-        "typescript",
-        "claude",
-        "shopify",
-        "ga4",
-        "analytics",
-        "hackathon",
-        "pop the bubble",
-        "joel jeon"
-      ]
-    },
-    {
-      id: "project2",
-      name: "AstraHack",
-      description: "Computer-use agents that explore a product, report QA issues and plan UGC campaigns.",
-      link: "https://github.com/jawadjalal/astrahack",
-      thumb: {
-        color: "pink",
-        slug: "astrahack"
-      },
-      hide: false,
-      videos: [
-        {
-          type: "direct",
-          url: "/projects/astrahack/animatic.mp4",
-          title: "A UGC storyboard animatic from my workstream"
-        }
-      ],
-      links: [
-        {
-          url: "https://github.com/jawadjalal/astrahack",
-          logo: "/icons/github.svg",
-          label: "Repository"
-        },
-        {
-          url: "https://cerebralvalley.ai/e/openai-gpt-6-astra-london",
-          logo: "/icons/cerebralvalley.png",
-          label: "Astra Hackathon"
-        }
-      ],
-      keywords: [
-        "astrahack",
-        "computer use",
-        "ai agents",
-        "gpt-6",
-        "astra",
-        "qa",
-        "ugc",
-        "animatic",
-        "hackathon",
-        "jawad jalal",
-        "niketh putta",
-        "joel jeon"
-      ]
-    },
-    {
-      id: "project1",
-      name: "Reel toolkit",
-      description: "Python and ffmpeg tools that turn one filmed take into a multi-look reel.",
-      link: "https://github.com/avi-aggarwal14/Dare-UGC-this_avi.ag",
-      thumb: {
-        color: "orange",
-        slug: "reel-toolkit"
-      },
-      hide: false,
-      links: [
-        {
-          url: "https://github.com/avi-aggarwal14/Dare-UGC-this_avi.ag",
-          logo: "/icons/github.svg",
-          label: "Repository"
-        }
-      ],
-      keywords: [
-        "python",
-        "ffmpeg",
-        "pillow",
-        "video editing",
-        "ai video",
-        "ugc",
-        "reels"
-      ]
     }
   ],
   education: [
@@ -942,24 +749,6 @@ export const siteContent: SiteContent = {
         "maths",
         "online programme",
         "university of oxford"
-      ],
-      description: "",
-      wip: false
-    },
-    {
-      id: "edu1",
-      institution: "Trinity College, Oxford",
-      degree: "Beyond the Classroom enrichment programme",
-      start: "Mar 2026",
-      end: "Jul 2026",
-      link: "https://www.trinity.ox.ac.uk/trinity-enrichment-programme-2026",
-      logo: "/icons/trinity.png",
-      locationId: "oxford-trinity",
-      keywords: [
-        "trinity college",
-        "oxford",
-        "enrichment",
-        "beyond the classroom"
       ],
       description: "",
       wip: false
@@ -1036,22 +825,6 @@ export const siteContent: SiteContent = {
         "hendon town hall",
         "councillors"
       ]
-    },
-    {
-      id: "talk1",
-      event: "Barnet Full Council",
-      title: "Words from Young People in Barnet",
-      date: "Jan 2024",
-      link: "https://barnet.moderngov.co.uk/ieListDocuments.aspx?CId=162&MId=11446&Ver=4",
-      logo: "/icons/barnet.png",
-      locationId: "hendon-town-hall",
-      wip: false,
-      keywords: [
-        "barnet full council",
-        "hendon town hall",
-        "youth elections",
-        "speech"
-      ]
     }
   ],
   volunteering: [
@@ -1073,26 +846,6 @@ export const siteContent: SiteContent = {
         "pshe",
         "youth voice",
         "campaign"
-      ],
-      wip: false
-    },
-    {
-      id: "volunteer3",
-      organization: "UK Youth Parliament",
-      title: "Deputy Member, Annual Conference",
-      start: "Aug 2026",
-      end: "Aug 2026",
-      link: "https://www.nya.org.uk/ukyp/",
-      logo: "/icons/ukyp.jpg",
-      locationId: "hull-university",
-      description: "Represented Barnet at the annual national conference",
-      keywords: [
-        "uk youth parliament",
-        "ukyp",
-        "hull",
-        "deputy",
-        "youth voice",
-        "debate"
       ],
       wip: false
     },
@@ -1183,44 +936,6 @@ export const siteContent: SiteContent = {
       wip: false
     },
     {
-      id: "award6",
-      organization: "LAMDA",
-      title: "Speaking in Public, Grade 8 (Distinction)",
-      start: "Oct 2025",
-      end: "Oct 2025",
-      link: "https://www.lamda.ac.uk",
-      logo: "/icons/lamda.png",
-      locationId: "london-lamda",
-      keywords: [
-        "lamda",
-        "public speaking",
-        "grade 8",
-        "distinction",
-        "speaking in public"
-      ],
-      description: "",
-      wip: false
-    },
-    {
-      id: "award3",
-      organization: "The Duke of Edinburgh's Award",
-      title: "Bronze Award",
-      start: "Dec 2025",
-      end: "Dec 2025",
-      link: "https://www.dofe.org",
-      logo: "/icons/dofe.png",
-      locationId: "london",
-      keywords: [
-        "duke of edinburgh",
-        "dofe",
-        "bronze award",
-        "volunteering",
-        "wings of hope"
-      ],
-      description: "",
-      wip: false
-    },
-    {
       id: "award2",
       organization: "UK Bebras Challenge",
       title: "Gold award, perfect score",
@@ -1295,15 +1010,6 @@ export const siteContent: SiteContent = {
         longitude: -0.2003
       }
     },
-    "hull-university": {
-      id: "hull-university",
-      city: "Hull",
-      country: "United Kingdom",
-      coordinates: {
-        latitude: 53.77325,
-        longitude: -0.36704
-      }
-    },
     "stlouis-americas-center": {
       id: "stlouis-americas-center",
       city: "St. Louis",
@@ -1322,15 +1028,6 @@ export const siteContent: SiteContent = {
         longitude: -2.4473
       }
     },
-    "london-lamda": {
-      id: "london-lamda",
-      city: "London",
-      country: "United Kingdom",
-      coordinates: {
-        latitude: 51.49049,
-        longitude: -0.21568
-      }
-    },
     "oxford-physics": {
       id: "oxford-physics",
       city: "Oxford",
@@ -1338,15 +1035,6 @@ export const siteContent: SiteContent = {
       coordinates: {
         latitude: 51.759,
         longitude: -1.258
-      }
-    },
-    "oxford-trinity": {
-      id: "oxford-trinity",
-      city: "Oxford",
-      country: "United Kingdom",
-      coordinates: {
-        latitude: 51.7553,
-        longitude: -1.2577
       }
     }
   },
@@ -1400,6 +1088,35 @@ export const siteContent: SiteContent = {
       "Github"
     ]
   },
+  seo: {
+    indexNowKey: "1b36f24e9252686419428c0611dd423b",
+    profilePageCreated: "2026-10-10",
+    worksFor: "work6",
+    affiliations: [
+      "work8",
+      "work9"
+    ],
+    homeLocationId: "london",
+    knowsAbout: [
+      "UGC",
+      "Growth marketing",
+      "AI video",
+      "Model Context Protocol",
+      "TypeScript",
+      "Next.js",
+      "Startups"
+    ],
+    extraSameAs: [
+      "https://www.npmjs.com/~_avi.ag"
+    ],
+    sourceCode: [
+      {
+        projectId: "project5",
+        programmingLanguage: "TypeScript",
+        license: "MIT"
+      }
+    ]
+  },
   assets: {
     projectBackgroundsDir: "/projects/backgrounds",
     projectArtDir: "/projects",
@@ -1416,14 +1133,9 @@ export const siteContent: SiteContent = {
       "yummers.png",
       "qe.png",
       "oxford.svg",
-      "trinity.png",
       "barnet.png",
-      "ukyp.jpg",
       "vex.png",
       "bebras.png",
-      "ef.png",
-      "cerebralvalley.png",
-      "goose.svg",
       "ugc.svg"
     ],
     logoNoCorner: [],

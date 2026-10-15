@@ -14,7 +14,7 @@ export function ConnectSection({ transition }: { transition: Transition }) {
 
   return (
     <motion.section id="connect" className={SECTION_CLASS} variants={SECTION_VARIANTS} transition={transition}>
-      <h3 className={HEADING_CLASS}>{sectionTitle('connect')}</h3>
+      <h2 className={HEADING_CLASS}>{sectionTitle('connect')}</h2>
       <p className="mb-5 text-zinc-600 dark:text-zinc-400">
         {connect.intro}{' '}
         <a className="underline dark:text-zinc-300" href={`mailto:${connect.email}`}>

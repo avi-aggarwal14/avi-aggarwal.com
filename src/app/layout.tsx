@@ -12,32 +12,22 @@ import { CommandBar } from '@/components/shell/CommandBar';
 import { GlassHeader } from '@/components/shell/GlassHeader';
 import { Header } from '@/components/shell/Header';
 import { SiteFooter } from '@/components/shell/SiteFooter';
-import { homepageJsonLd } from '@/lib/seo';
+import { LANG, ROBOTS, profileUrls, socialMetadata } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site-url';
 
-const { site } = siteContent;
+const { site, profile } = siteContent;
 
+/** Defaults for every route; the homepage replaces the title (absolute) and the social card title in page.tsx. */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: site.title, template: site.titleTemplate },
   description: site.description,
+  authors: [{ name: profile.name, url: SITE_URL }],
+  creator: profile.name,
+  publisher: profile.name,
+  robots: ROBOTS,
   alternates: { canonical: SITE_URL },
-  openGraph: {
-    title: site.title,
-    description: site.description,
-    url: SITE_URL,
-    siteName: site.title,
-    locale: site.locale,
-    images: [{ url: '/api/og', width: 1200, height: 630, alt: site.ogImageAlt }],
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    creator: site.twitterCreator,
-    title: site.title,
-    description: site.description,
-    images: ['/api/og'],
-  },
+  ...socialMetadata(site.title),
   icons: [
     { rel: 'icon', url: '/favicon.ico', type: 'image/x-icon' },
     { rel: 'icon', url: '/favicon.svg', type: 'image/svg+xml', sizes: 'any' },
@@ -54,10 +44,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang={LANG} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        {homepageJsonLd().map((block, i) => (
-          <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(block) }} />
+        {/* rel="me": the social profiles this site claims (IndieAuth / Mastodon-style identity links) */}
+        {profileUrls().map((url) => (
+          <link key={url} rel="me" href={url} />
         ))}
       </head>
       <body className="bg-zinc-50 tracking-tighter antialiased dark:bg-zinc-900">

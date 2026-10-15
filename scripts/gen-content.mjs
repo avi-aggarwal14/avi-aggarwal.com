@@ -106,6 +106,37 @@ for (const p of data.projects) {
 for (const p of [data.profile.avatar, data.profile.wordmark, data.profile.footerWordmark, data.profile.favicon]) need(p, 'profile');
 if (missing.size) throw new Error(`missing files:\n  ${[...missing].join('\n  ')}`);
 
+// SEO: site.homeTitle is the homepage <title>; seo.* feeds the IndexNow key file and the JSON-LD graph, so every id must resolve.
+{
+  const seo = data.seo;
+  if (typeof data.site.homeTitle !== 'string' || !data.site.homeTitle.trim()) throw new Error('site.homeTitle is required');
+  if (!seo || !/^[a-f0-9]{32}$/.test(seo.indexNowKey)) throw new Error('seo.indexNowKey must be 32 hex characters');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(seo.profilePageCreated)) throw new Error('seo.profilePageCreated must be an ISO date (YYYY-MM-DD)');
+  const liveWork = new Set(data.work.filter((w) => !w.wip).map((w) => w.id));
+  for (const id of [seo.worksFor, ...(seo.affiliations ?? [])]) if (!liveWork.has(id)) throw new Error(`seo: "${id}" is not a live work entry`);
+  if (!data.locations[seo.homeLocationId]) throw new Error(`seo.homeLocationId: unknown location "${seo.homeLocationId}"`);
+  for (const key of ['affiliations', 'knowsAbout', 'extraSameAs']) {
+    if (!Array.isArray(seo[key]) || seo[key].some((v) => typeof v !== 'string' || !v)) throw new Error(`seo.${key} must be a list of non-empty strings`);
+  }
+  for (const url of seo.extraSameAs) if (!/^https?:\/\//.test(url)) throw new Error(`seo.extraSameAs: "${url}" is not absolute`);
+  if (!Array.isArray(seo.sourceCode)) throw new Error('seo.sourceCode must be a list');
+  for (const s of seo.sourceCode) {
+    const p = data.projects.find((p) => p.id === s.projectId && !p.hide);
+    if (!p) throw new Error(`seo.sourceCode: "${s.projectId}" is not a visible project`);
+    if (!p.links.some((l) => l.url.startsWith('https://github.com/'))) throw new Error(`seo.sourceCode: ${p.id} has no GitHub link to use as codeRepository`);
+    if (!p.link) throw new Error(`seo.sourceCode: ${p.id} needs a link (the SoftwareSourceCode url)`);
+    for (const key of ['programmingLanguage', 'license']) if (typeof s[key] !== 'string' || !s[key]) throw new Error(`seo.sourceCode/${p.id}: ${key} is required`);
+  }
+  // IndexNow key file: served as /<key>.txt with exactly the key as its body (no newline); stale key files go
+  for (const file of fs.readdirSync('public')) {
+    if (/^[a-f0-9]{32}\.txt$/.test(file) && file !== `${seo.indexNowKey}.txt`) fs.unlinkSync(`public/${file}`);
+  }
+  fs.writeFileSync(`public/${seo.indexNowKey}.txt`, seo.indexNowKey);
+}
+
+// No em dash (U+2014) anywhere in the shipped content (the character is built from its code point so this script passes the same grep).
+if (JSON.stringify(data).includes(String.fromCharCode(0x2014))) throw new Error('em dash (U+2014) found in the content JSON');
+
 // Per-project overrides: hypjam's brand rules forbid recolouring the jam-orange play triangle,
 // so its card art uses the real lockups (light / dark) instead of the inverted monochrome art.
 for (const project of data.projects) {
@@ -127,7 +158,7 @@ data.assets = {
   // colour logos and dark tiles keep their colours in dark mode; monochrome black logos get dark:invert
   logoNoInvert: [
     'npm.svg', 'hypjam.svg', 'ignura.svg', 'cluely.png', 'gtmcakes.png', 'yummers.png', 'qe.png',
-    'oxford.svg', 'trinity.png', 'barnet.png', 'ukyp.jpg', 'vex.png', 'bebras.png', 'ef.png', 'cerebralvalley.png', 'goose.svg', 'ugc.svg',
+    'oxford.svg', 'barnet.png', 'vex.png', 'bebras.png', 'ugc.svg',
   ],
   logoNoCorner: [],
   logoRoundFull: [],
@@ -223,6 +254,8 @@ export interface SiteContent {
     url: string; title: string; titleTemplate: string; description: string;
     twitterCreator: string; ogImageAlt: string; locale: string;
     themeColorLight: string; themeColorDark: string;
+    /** the homepage <title>, used verbatim (absolute, no template); other routes keep titleTemplate */
+    homeTitle: string;
   };
   profile: {
     name: string; handle: string; role: string; about: string; email: string;
@@ -253,6 +286,23 @@ export interface SiteContent {
   footer: { copyright: string; credit?: { text: string; url: string }; socials: string[] };
   /** visitedCountries is a GeoJSON file built from map.visitedCountryCodes (scripts/gen-visited-countries.mjs) */
   map: { maplibreVersion: string; styles: { dark: string; light: string }; visitedCountries: string; visitedCountryCodes: string[] };
+  /** Technical SEO: the IndexNow key (served at /<key>.txt) and the facts behind the JSON-LD graph (ids resolve into work, projects and locations). */
+  seo: {
+    indexNowKey: string;
+    /** ProfilePage.dateCreated (YYYY-MM-DD) */
+    profilePageCreated: string;
+    /** work entry id of the Organization in Person.worksFor; its title is the Person.jobTitle */
+    worksFor: string;
+    /** work entry ids listed under Person.affiliation (membership only, no founder claims) */
+    affiliations: string[];
+    /** locations key of Person.homeLocation */
+    homeLocationId: string;
+    knowsAbout: string[];
+    /** absolute profile URLs added to Person.sameAs after the socials */
+    extraSameAs: string[];
+    /** SoftwareSourceCode blocks: the project's GitHub link is the codeRepository, its link the url */
+    sourceCode: { projectId: string; programmingLanguage: string; license: string }[];
+  };
   /** Asset configuration: paths and per-file rendering rules for the files in public/. */
   assets: {
     projectBackgroundsDir: string;

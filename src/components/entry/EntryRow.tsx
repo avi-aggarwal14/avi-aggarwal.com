@@ -14,7 +14,7 @@ export function EntryRow({ row }: { row: EntryRowData }) {
       <div className="relative flex w-full flex-row items-center justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2">
-            <h4 className="truncate font-normal dark:text-zinc-100">{row.title}</h4>
+            <h3 className="truncate font-normal dark:text-zinc-100">{row.title}</h3>
             {row.wip && (
               <span className="shrink-0 rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400">
                 WIP

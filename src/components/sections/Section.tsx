@@ -22,7 +22,7 @@ type SectionProps = {
 export function Section({ id, title, transition, children }: SectionProps) {
   return (
     <motion.section id={id} className={SECTION_CLASS} variants={SECTION_VARIANTS} transition={transition}>
-      <h3 className={HEADING_CLASS}>{title}</h3>
+      <h2 className={HEADING_CLASS}>{title}</h2>
       <div className="-mx-4">{children}</div>
     </motion.section>
   );

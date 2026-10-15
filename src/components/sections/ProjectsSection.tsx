@@ -12,7 +12,7 @@ export function ProjectsSection({ projects, transition }: { projects: Project[];
   return (
     <motion.section id="projects" className={SECTION_CLASS} variants={SECTION_VARIANTS} transition={transition}>
       <div className="mb-5 flex items-baseline justify-between">
-        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{sectionTitle('projects')}</h3>
+        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{sectionTitle('projects')}</h2>
         <ProjectStatsTrigger />
       </div>
       <CollapsibleList

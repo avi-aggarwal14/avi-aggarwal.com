@@ -114,7 +114,7 @@ export function GlassHeader() {
 
   const logo = (wordmarkHeight: number, onClick?: () => void) => (
     <Link href="/" onClick={onClick} className={LOGO_LINK_CLASS}>
-      <Image src={profile.avatar} alt="Profile photo" width={64} height={64} className="size-7 rounded-full object-cover" draggable={false} />
+      <Image src={profile.avatar} alt={profile.name} width={64} height={64} className="size-7 rounded-full object-cover" draggable={false} />
       <Image src={profile.wordmark} alt={profile.handle} width={120} height={wordmarkHeight} className="h-6 w-auto translate-y-[1.5px] dark:invert" draggable={false} />
     </Link>
   );
