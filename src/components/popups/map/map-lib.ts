@@ -70,12 +70,3 @@ export function flyToLocation(map: maplibregl.Map, target: LngLat) {
   map.stop();
   map.flyTo({ center: [target.lng, target.lat], zoom: 15, duration, essential: true, easing: (t: number) => 1 - Math.pow(1 - t, 3) });
 }
-
-/** Great-circle distance in km (earth radius 6371 km). */
-export function haversineKm(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }): number {
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(b.latitude - a.latitude);
-  const dLng = toRad(b.longitude - a.longitude);
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.latitude)) * Math.cos(toRad(b.latitude)) * Math.sin(dLng / 2) ** 2;
-  return 2 * 6371 * Math.asin(Math.sqrt(h));
-}

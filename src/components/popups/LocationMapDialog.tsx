@@ -8,7 +8,7 @@ import { AnimatedNumber } from '@/components/popups/AnimatedNumber';
 import { TimelineList } from '@/components/popups/TimelineList';
 import { useActivityEntries } from '@/components/popups/timeline-context';
 import type { MarkerGroup } from '@/components/popups/map/CityMap';
-import { haversineKm } from '@/components/popups/map/map-lib';
+import { haversineKm } from '@/lib/geo';
 import { useCurrentYear } from '@/hooks/useCurrentYear';
 import { isDarkTheme } from '@/lib/themes';
 import { cn } from '@/lib/utils';
