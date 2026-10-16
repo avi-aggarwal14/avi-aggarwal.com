@@ -69,7 +69,8 @@ function workEntry(id: string) {
  */
 export function homepageJsonLd(): { '@context': string; '@graph': Record<string, unknown>[] } {
   const employer = workEntry(seo.worksFor);
-  const employerId = fragmentId(employer.company);
+  // Prefer the employer site's own @id (its entity home) so avi-aggarwal.com and hypjam.com describe one Organization node.
+  const employerId = seo.worksForEntityId ?? fragmentId(employer.company);
   const home = locations[seo.homeLocationId];
   const [givenName, ...family] = profile.name.split(' ');
 

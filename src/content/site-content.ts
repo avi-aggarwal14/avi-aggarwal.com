@@ -123,6 +123,8 @@ export interface SiteContent {
     profilePageCreated: string;
     /** work entry id of the Organization in Person.worksFor; its title is the Person.jobTitle */
     worksFor: string;
+    /** optional: the employer's own Organization @id on its site (its entity home), so both sites name one node */
+    worksForEntityId?: string;
     /** work entry ids listed under Person.affiliation (membership only, no founder claims) */
     affiliations: string[];
     /** locations key of Person.homeLocation */
@@ -1059,7 +1061,8 @@ export const siteContent: SiteContent = {
         programmingLanguage: "TypeScript",
         license: "MIT"
       }
-    ]
+    ],
+    worksForEntityId: "https://hypjam.com/#org"
   },
   assets: {
     projectBackgroundsDir: "/projects/backgrounds",

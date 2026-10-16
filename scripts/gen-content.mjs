@@ -115,6 +115,7 @@ if (missing.size) throw new Error(`missing files:\n  ${[...missing].join('\n  ')
   const liveWork = new Set(data.work.filter((w) => !w.wip).map((w) => w.id));
   for (const id of [seo.worksFor, ...(seo.affiliations ?? [])]) if (!liveWork.has(id)) throw new Error(`seo: "${id}" is not a live work entry`);
   if (!data.locations[seo.homeLocationId]) throw new Error(`seo.homeLocationId: unknown location "${seo.homeLocationId}"`);
+  if (seo.worksForEntityId !== undefined && !/^https:\/\/[^\s#]+#[A-Za-z0-9_-]+$/.test(seo.worksForEntityId)) throw new Error('seo.worksForEntityId must be an absolute https URL with a #fragment (the employer site\'s own Organization @id)');
   for (const key of ['affiliations', 'knowsAbout', 'extraSameAs']) {
     if (!Array.isArray(seo[key]) || seo[key].some((v) => typeof v !== 'string' || !v)) throw new Error(`seo.${key} must be a list of non-empty strings`);
   }
@@ -293,6 +294,8 @@ export interface SiteContent {
     profilePageCreated: string;
     /** work entry id of the Organization in Person.worksFor; its title is the Person.jobTitle */
     worksFor: string;
+    /** optional: the employer's own Organization @id on its site (its entity home), so both sites name one node */
+    worksForEntityId?: string;
     /** work entry ids listed under Person.affiliation (membership only, no founder claims) */
     affiliations: string[];
     /** locations key of Person.homeLocation */
