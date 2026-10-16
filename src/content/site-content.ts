@@ -1050,7 +1050,8 @@ export const siteContent: SiteContent = {
       "https://dev.to/aviaggarwal",
       "https://hashnode.com/@aviaggarwal",
       "https://medium.com/@aviaggarwal.hypjam",
-      "https://devpost.com/avi-aggarwal14"
+      "https://devpost.com/avi-aggarwal14",
+      "https://peerlist.io/aviaggarwal14"
     ],
     sourceCode: [
       {
