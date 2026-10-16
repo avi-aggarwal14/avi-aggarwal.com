@@ -33,6 +33,7 @@ export function ProjectCard({ project }: { project: Project }) {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
+              ariaLabel={`${project.name} ${link.label}`}
               className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
             >
               <Image

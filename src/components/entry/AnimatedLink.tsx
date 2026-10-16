@@ -3,6 +3,8 @@ import { useState, type MouseEventHandler, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 type AnimatedLinkProps = {
+  /** accessible name when the visible text alone is ambiguous (it should contain the visible text) */
+  ariaLabel?: string;
   as?: 'a' | 'button';
   className?: string;
   children: ReactNode;
@@ -14,7 +16,7 @@ type AnimatedLinkProps = {
 };
 
 /** Text link whose 1px underline grows left-to-right over 200ms on hover and retracts to the right. */
-export function AnimatedLink({ as = 'a', className, children, href, target, rel, type, onClick }: AnimatedLinkProps) {
+export function AnimatedLink({ as = 'a', className, children, href, target, rel, type, onClick, ariaLabel }: AnimatedLinkProps) {
   const [hover, setHover] = useState(false);
   const style = {
     backgroundImage: 'linear-gradient(currentColor, currentColor)',
@@ -28,13 +30,13 @@ export function AnimatedLink({ as = 'a', className, children, href, target, rel,
 
   if (as === 'button') {
     return (
-      <button type={type} className={classes} style={style} {...handlers}>
+      <button type={type} aria-label={ariaLabel} className={classes} style={style} {...handlers}>
         {children}
       </button>
     );
   }
   return (
-    <a href={href} target={target} rel={rel} className={classes} style={style} {...handlers}>
+    <a href={href} target={target} rel={rel} aria-label={ariaLabel} className={classes} style={style} {...handlers}>
       {children}
     </a>
   );

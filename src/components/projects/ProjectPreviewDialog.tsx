@@ -204,7 +204,7 @@ function PreviewBody({ project }: { project: Project }) {
           <div className="flex flex-wrap items-center gap-2">
             {pills.map((pill) => (
               <Magnetic key={pill.key} springOptions={{ bounce: 0 }} intensity={0.3}>
-                <a href={pill.href} target="_blank" rel="noopener noreferrer" className={PILL}>
+                <a href={pill.href} target="_blank" rel="noopener noreferrer" aria-label={`${project.name} ${pill.label}`} className={PILL}>
                   <Image className={getLogoImageClass(pill.logo, true, 'project-card')} width={16} height={16} alt="" aria-hidden="true" draggable={false} src={pill.logo} />
                   {pill.label}
                   <span className="text-black group-hover:text-white dark:text-zinc-100 dark:group-hover:text-black group-hover:transition-colors group-hover:duration-200">
