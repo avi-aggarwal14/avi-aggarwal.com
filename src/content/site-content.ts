@@ -159,19 +159,19 @@ export const siteContent: SiteContent = {
     url: "https://avi-aggarwal.com",
     title: "Avi Aggarwal",
     titleTemplate: "%s | Avi Aggarwal",
-    description: "Avi Aggarwal is a founder in London. He runs hypjam, a UGC agency, co-founded Ignura and Yummers, and built the open-source dare-mcp-server.",
+    description: "Avi Aggarwal is a founder in London. He runs hypjam, a UGC agency, co-founded Yummers, and built the open-source dare-mcp-server.",
     twitterCreator: "@_avi_md",
     ogImageAlt: "Avi Aggarwal, founder of hypjam",
     locale: "en_GB",
     themeColorLight: "#fafafa",
     themeColorDark: "#18181b",
-    homeTitle: "Avi Aggarwal | Founder of hypjam, Co-Founder of Ignura"
+    homeTitle: "Avi Aggarwal | Founder of hypjam, a UGC agency in London"
   },
   profile: {
     name: "Avi Aggarwal",
     handle: "aviaggarwal",
     role: "Founder & CMO",
-    about: "I'm 15, and I build things. I run hypjam, a UGC agency in London, and I co-founded Ignura, a launch studio for apps, and Yummers, a food app. I spent a week with Cluely's marketing team in New York and worked as a founding engineer at 8x. I also wrote dare-mcp-server, an open-source MCP server that lets Claude generate AI video. Outside tech, I'm one of Barnet's two elected Youth Ambassadors, and in October the borough's head teachers agreed to start testing my financial education resources in their schools.",
+    about: "I'm 15, and I build things. I run hypjam, a UGC agency in London, and I co-founded Yummers, a food app. I spent a week with Cluely's marketing team in New York and worked as a founding engineer at 8x. I also wrote dare-mcp-server, an open-source MCP server that lets Claude generate AI video. Outside tech, I'm one of Barnet's two elected Youth Ambassadors, and in October the borough's head teachers agreed to start testing my financial education resources in their schools.",
     email: "avi@hypjam.com",
     avatar: "/profile.png",
     wordmark: "/generated/aviaggarwal.svg",
@@ -427,29 +427,6 @@ export const siteContent: SiteContent = {
       wip: false
     },
     {
-      id: "work8",
-      company: "Ignura",
-      title: "Co-Founder & CMO",
-      start: "Oct 2026",
-      end: "Present",
-      link: "https://ignura.com",
-      logo: "/icons/ignura.svg",
-      locationId: "london",
-      description: "Launch studio for apps. I lead marketing",
-      keywords: [
-        "ignura",
-        "cmo",
-        "chief marketing officer",
-        "launch studio",
-        "app launch",
-        "ugc",
-        "go-to-market",
-        "marketing",
-        "jawad jalal"
-      ],
-      wip: false
-    },
-    {
       id: "work9",
       company: "Yummers",
       title: "Co-Founder & CMO",
@@ -604,43 +581,6 @@ export const siteContent: SiteContent = {
         "cal.com"
       ],
       hide: false
-    },
-    {
-      id: "project8",
-      name: "Ignura",
-      description: "Launch studio for apps: design, launch films, UGC and go-to-market, from one team.",
-      link: "https://ignura.com",
-      thumb: {
-        color: "red",
-        slug: "ignura"
-      },
-      videos: [
-        {
-          type: "direct",
-          url: "/projects/ignura/walkthrough.mp4",
-          title: "ignura.com: scroll through the studio"
-        }
-      ],
-      links: [
-        {
-          url: "https://ignura.com",
-          logo: "/icons/ignura.svg",
-          label: "Website"
-        }
-      ],
-      hide: false,
-      keywords: [
-        "ignura",
-        "launch studio",
-        "apps",
-        "cmo",
-        "marketing",
-        "launch films",
-        "ugc",
-        "go-to-market",
-        "london",
-        "jawad jalal"
-      ]
     },
     {
       id: "project9",
@@ -1093,7 +1033,6 @@ export const siteContent: SiteContent = {
     profilePageCreated: "2026-10-10T21:00:00+01:00",
     worksFor: "work6",
     affiliations: [
-      "work8",
       "work9"
     ],
     homeLocationId: "london",
@@ -1131,7 +1070,6 @@ export const siteContent: SiteContent = {
     logoNoInvert: [
       "npm.svg",
       "hypjam.svg",
-      "ignura.svg",
       "cluely.png",
       "gtmcakes.png",
       "yummers.png",

@@ -241,6 +241,7 @@ const iconPath = (file) => /<path[^>]*\sd="([^"]+)"/.exec(fs.readFileSync(path.j
  * loops (outer loops clockwise, holes counter-clockwise, so nonzero fill is correct). Returns the path
  * and the tight bounding box of the filled cells.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for future pixel-art card glyphs
 function tracePixelArt(file, skipFills = []) {
   const svg = fs.readFileSync(file, 'utf8');
   const cells = new Set();
@@ -292,19 +293,9 @@ function tracePixelArt(file, skipFills = []) {
   }
   return { d, ...box, w: box.maxX - box.minX, h: box.maxY - box.minY };
 }
-// the pale core (#FFE58F) stays open, so the silhouette reads as a flame with an inner tongue rather than a drop
-const flame = tracePixelArt('public/icons/ignura.svg', ['#ffe58f']);
-console.log(`ignura flame traced: ${flame.w}x${flame.h} cells, ${flame.d.length} chars`);
 
 const GLYPHS = {
   mcp: { viewBox: '0 0 24 24', w: 24, h: 24, svg: `<path fill="black" d="${iconPath('modelcontextprotocol.svg')}"/>` },
-  // Ignura: the pixel flame from public/icons/ignura.svg as one black silhouette (crisp edges keep the pixel look)
-  flame: {
-    viewBox: `${flame.minX} ${flame.minY} ${flame.w} ${flame.h}`,
-    w: flame.w,
-    h: flame.h,
-    svg: `<path fill="black" shape-rendering="crispEdges" d="${flame.d}"/>`,
-  },
   // Yummers: an original dish glyph: a serving cloche (knob, dome) lifted just above its plate
   cloche: {
     viewBox: '0 14 100 76',
@@ -316,7 +307,6 @@ const GLYPHS = {
 
 // [slug, glyph, text, glyph height as a multiple of the text size]; add a row per project card (slug = thumb.slug in the content JSON)
 const CARDS = [
-  ['ignura', 'flame', 'Ignura', 1.08],
   ['yummers', 'cloche', 'Yummers', 1],
   ['dare-mcp', 'mcp', 'dare-mcp-server', 1],
 ];

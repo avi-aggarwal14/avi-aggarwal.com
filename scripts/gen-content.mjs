@@ -157,7 +157,7 @@ data.assets = {
   youtubeIcon: '/icons/youtube.svg',
   // colour logos and dark tiles keep their colours in dark mode; monochrome black logos get dark:invert
   logoNoInvert: [
-    'npm.svg', 'hypjam.svg', 'ignura.svg', 'cluely.png', 'gtmcakes.png', 'yummers.png', 'qe.png',
+    'npm.svg', 'hypjam.svg', 'cluely.png', 'gtmcakes.png', 'yummers.png', 'qe.png',
     'oxford.svg', 'barnet.png', 'vex.png', 'bebras.png', 'ugc.svg',
   ],
   logoNoCorner: [],
