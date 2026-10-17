@@ -6,6 +6,9 @@ const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || siteContent.site.url).repl
 const LEGACY_HOST = 'aviaggarwal.vercel.app';
 
 const nextConfig: NextConfig = {
+  // PostHog's API paths end in a slash (/i/v0/e/); without this, Next would 308 them to the slash-less
+  // path before the /relay rewrite runs. The site's own pages are unaffected (canonical tags stay as is).
+  skipTrailingSlashRedirect: true,
   env: {
     // one timestamp per build: the sitemap's lastModified and ProfilePage.dateModified
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
@@ -22,6 +25,10 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         { source: '/index.md', destination: '/api/md/index' },
+        // first-party proxy for PostHog (EU cloud), used by src/components/shell/PostHogAnalytics.tsx
+        { source: '/relay/static/:path*', destination: 'https://eu-assets.i.posthog.com/static/:path*' },
+        { source: '/relay/array/:path*', destination: 'https://eu-assets.i.posthog.com/array/:path*' },
+        { source: '/relay/:path*', destination: 'https://eu.i.posthog.com/:path*' },
       ],
       afterFiles: [],
       fallback: [],

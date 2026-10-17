@@ -12,6 +12,7 @@ import { CommandBar } from '@/components/shell/CommandBar';
 import { GlassHeader } from '@/components/shell/GlassHeader';
 import { Header } from '@/components/shell/Header';
 import { SiteFooter } from '@/components/shell/SiteFooter';
+import { PostHogAnalytics } from '@/components/shell/PostHogAnalytics';
 import { LANG, ROBOTS, profileUrls, socialMetadata } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site-url';
 
@@ -69,6 +70,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
               <Analytics />
             </>
           )}
+          {/* PostHog web analytics; sends only from avi-aggarwal.com (see the component) */}
+          <PostHogAnalytics />
           <CustomCursor />
           <CommandBar />
           <div className="relative z-10 flex min-h-screen w-full flex-col">
