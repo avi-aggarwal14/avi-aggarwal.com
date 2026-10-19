@@ -16,6 +16,7 @@ import {
   MoonStar,
   PartyPopper,
   Presentation,
+  Signature,
   Sparkle,
   Sun,
   Video,
@@ -27,6 +28,7 @@ export const NAVIGATION_ICONS: Record<string, ReactNode> = {
   projects: <FolderCode className="size-4" />,
   education: <GraduationCap className="size-4" />,
   research: <FlaskConical className="size-4" />,
+  writing: <Signature className="size-4" />,
   talks: <Presentation className="size-4" />,
   volunteering: <HandHelping className="size-4" />,
   awards: <Award className="size-4" />,
@@ -44,6 +46,7 @@ export const THEME_ICONS: Record<string, ReactNode> = {
 
 export const PROJECT_VIDEO_ICON = <Video className="size-4" />;
 export const PROJECT_IMAGE_ICON = <ImageIcon className="size-4" />;
+export const BLOG_ICON = <Signature className="size-4" />;
 export const CONFETTI_ICON = <PartyPopper className="size-4" />;
 
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;

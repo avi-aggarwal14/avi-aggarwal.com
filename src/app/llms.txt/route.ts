@@ -1,7 +1,8 @@
 import { siteContent } from '@/content/site-content';
+import { publishedPosts } from '@/lib/blog';
 import { SITE_URL } from '@/lib/site-url';
 
-/** llms.txt: primary markdown alternate, discovery links and the use policy. */
+/** llms.txt: primary markdown alternate, the writing list (markdown twins), discovery links and the use policy. */
 export function GET() {
   const { site, profile } = siteContent;
   const summary = site.description.replace(new RegExp(`^${profile.name} is (a |an |the )?`), '');
@@ -14,6 +15,7 @@ export function GET() {
     '',
     `- [Homepage](${SITE_URL}/index.md)`,
     '',
+    ...(publishedPosts().length ? ['## Writing', '', ...publishedPosts().map((post) => `- [${post.title}](${SITE_URL}${post.link}.md): ${post.description}`), ''] : []),
     '## Discovery',
     '',
     `- [Sitemap](${SITE_URL}/sitemap.xml)`,

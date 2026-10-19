@@ -30,6 +30,7 @@ export default function Home() {
         volunteering={toEntryRows('volunteering', c.volunteering)}
         awards={toEntryRows('awards', c.awards)}
         projects={c.projects.filter((p) => !p.hide)}
+        writing={c.writing}
         timeline={getActivityEntries()}
       />
     </>

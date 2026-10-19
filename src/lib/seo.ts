@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Metadata } from 'next';
-import { siteContent } from '@/content/site-content';
+import { siteContent, type BlogPost } from '@/content/site-content';
+import { postDateTime } from '@/lib/blog';
 import { BUILD_TIME } from '@/lib/build-time';
 import { SITE_URL } from '@/lib/site-url';
 
@@ -141,7 +142,37 @@ export function homepageJsonLd(): { '@context': string; '@graph': Record<string,
   return { '@context': 'https://schema.org', '@graph': [website, page, person, organization, ...sourceCode] };
 }
 
-/** The graph serialised for an inline script ("<" escaped so the JSON can never close the tag). */
+/** JSON-LD serialised for an inline script ("<" escaped so the JSON can never close the tag). */
+const serialise = (data: object) => JSON.stringify(data).replace(/</g, '\\u003c');
+
+/** The homepage graph serialised for its inline script. */
 export function jsonLdHtml(): string {
-  return JSON.stringify(homepageJsonLd()).replace(/</g, '\\u003c');
+  return serialise(homepageJsonLd());
+}
+
+/**
+ * One BlogPosting per post page. Author and publisher are the homepage's Person node and isPartOf its WebSite node
+ * (same @id values; name and url ride along so the page validates on its own). datePublished is a full date-time.
+ */
+export function blogPostingJsonLd(post: BlogPost, date?: string): Record<string, unknown> {
+  const url = `${SITE_URL}${post.link}`;
+  const person = { '@type': 'Person', '@id': ID.person, name: profile.name, url: SITE_URL };
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    '@id': `${url}#blogposting`,
+    headline: post.title,
+    description: post.description,
+    ...(date ? { datePublished: postDateTime(date) } : {}),
+    url,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    author: person,
+    publisher: person,
+    isPartOf: { '@id': ID.website },
+    inLanguage: LANG,
+  };
+}
+
+export function blogPostingJsonLdHtml(post: BlogPost, date?: string): string {
+  return serialise(blogPostingJsonLd(post, date));
 }

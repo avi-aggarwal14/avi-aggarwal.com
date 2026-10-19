@@ -12,6 +12,12 @@ import { siteContent } from '@/content/site-content';
 
 const SCROLL_THRESHOLD = 100;
 
+/**
+ * Post pages carry no glass nav (glass-header §8). Only real post paths match, not every /blog/ path: an unknown slug
+ * is served the prerendered /_not-found shell, which renders the nav, so a prefix test would break hydration there.
+ */
+const POST_PATHS = new Set<string>(siteContent.writing.filter((p) => !p.wip).map((p) => p.link));
+
 /** Scroll-spy: highest intersection ratio inside the 20%–30% viewport band wins; only on `/`. */
 function useActiveSection() {
   const [active, setActive] = useState('');
@@ -107,6 +113,8 @@ export function GlassHeader() {
     requestAnimationFrame(() => scrollToElement(id, { block: 'start' }));
     setIsMenuOpen(false);
   };
+
+  if (POST_PATHS.has(pathname.replace(/\/+$/, ''))) return null;
 
   const stateClasses =
     `${isOverlayHidden ? '' : 'transition-all duration-300'} ` +

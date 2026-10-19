@@ -66,13 +66,57 @@ for (const [id, n] of Object.entries(visibleCounts)) {
   if (!Number.isInteger(n) || n < 1) throw new Error(`sections.visibleCounts.${id}: must be a positive integer, got ${JSON.stringify(n)}`);
 }
 
-// Writing is gone (FIX-HERO-SOCIALS): the blog route code was deleted, so the JSON must not expose it anywhere.
-if (data.writing?.length) throw new Error(`writing: the Writing section was removed; ${data.writing.length} post(s) found`);
-for (const [where, list] of [['sections.order', order], ['sections.navItems', data.sections.navItems], ['commandBar.placeholders', data.commandBar.placeholders]]) {
-  if (list.includes('writing')) throw new Error(`${where}: "writing" is no longer a section`);
+// Writing: each entry is the list data for one post (title, description, display date, keywords); the body is
+// content/blog/<slug>.mdx. Every live post needs that file, and its front matter must agree with the entry.
+{
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const frontMatter = (source) => {
+    const m = /^---\n([\s\S]*?)\n---\n/.exec(source);
+    if (!m) return null;
+    const out = {};
+    for (const line of m[1].split('\n')) {
+      const i = line.indexOf(':');
+      if (i > 0) out[line.slice(0, i).trim()] = line.slice(i + 1).trim().replace(/^"(.*)"$/, '$1');
+    }
+    return out;
+  };
+  if (!Array.isArray(data.writing)) throw new Error('writing must be a list (empty for no posts)');
+  const seen = new Set();
+  for (const post of data.writing) {
+    const where = `writing/${post.uid}`;
+    if (typeof post.uid !== 'string' || !post.uid) throw new Error('writing: every post needs a uid');
+    for (const key of ['title', 'description']) if (typeof post[key] !== 'string' || !post[key].trim()) throw new Error(`${where}: ${key} is required`);
+    const slug = /^\/blog\/([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(post.link)?.[1];
+    if (!slug) throw new Error(`${where}: link must be /blog/<lowercase-slug>, got ${JSON.stringify(post.link)}`);
+    for (const key of [post.uid, post.link]) {
+      if (seen.has(key)) throw new Error(`${where}: duplicate uid or link ${key}`);
+      seen.add(key);
+    }
+    if (!MONTH_YEAR.test(post.date)) throw new Error(`${where}: date must be "Mon YYYY", got ${JSON.stringify(post.date)}`);
+    if (typeof post.wip !== 'boolean') throw new Error(`${where}: wip must be true or false`);
+    if (!Array.isArray(post.keywords) || post.keywords.some((k) => typeof k !== 'string' || !k)) throw new Error(`${where}: keywords must be a list of strings`);
+    if (post.wip) continue;
+    const file = `content/blog/${slug}.mdx`;
+    if (!fs.existsSync(file)) throw new Error(`${where}: ${file} is missing`);
+    const source = fs.readFileSync(file, 'utf8');
+    if (source.includes(String.fromCharCode(0x2014))) throw new Error(`${file}: em dash (U+2014) found`);
+    const fm = frontMatter(source);
+    if (!fm) throw new Error(`${file}: no front matter`);
+    if (fm.title !== post.title) throw new Error(`${file}: front matter title differs from the JSON entry`);
+    if (fm.description !== post.description) throw new Error(`${file}: front matter description differs from the JSON entry`);
+    if (fm.slug !== undefined && fm.slug !== slug) throw new Error(`${file}: front matter slug "${fm.slug}" differs from the file name`);
+    const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fm.date ?? '');
+    if (!d) throw new Error(`${file}: front matter date must be YYYY-MM-DD`);
+    if (`${MONTHS[Number(d[2]) - 1]} ${d[1]}` !== post.date) throw new Error(`${where}: date "${post.date}" is not the month of the post's ${fm.date}`);
+    if (fm.original !== undefined && !/^https:\/\//.test(fm.original)) throw new Error(`${file}: original must be an absolute https URL`);
+    if (fm.originalLabel !== undefined && (!fm.original || !fm.originalLabel)) throw new Error(`${file}: originalLabel needs a non-empty label and an original URL`);
+  }
+  // a nav item, placeholder or section for Writing with nothing to show would be a dead link
+  const live = data.writing.filter((p) => !p.wip).length;
+  for (const [where, list] of [['sections.order', order], ['sections.navItems', data.sections.navItems], ['commandBar.placeholders', data.commandBar.placeholders]]) {
+    if (list.includes('writing') && live === 0) throw new Error(`${where}: lists "writing" but there are no live posts`);
+  }
 }
-delete data.writing;
-delete data.commandBar.groupLabels.blogpost;
 
 // Hero and footer social rows: labels resolve to socials[].label, no duplicates (Luma is deliberately absent, Meet lives in the glass nav).
 for (const [where, labels] of [['hero.socials', data.hero?.socials], ['footer.socials', data.footer?.socials]]) {
@@ -234,6 +278,17 @@ export interface Project {
   keywords: string[];
 }
 
+export interface BlogPost {
+  uid: string;
+  title: string;
+  description: string;
+  link: \`/blog/\${string}\`;
+  /** display date, "Mon YYYY" */
+  date: MonthYear;
+  wip: boolean;
+  keywords: string[];
+}
+
 export interface SocialLink { id: string; label: string; link: string; keywords: string[] }
 
 export type ThemeId = 'system' | 'light' | 'dark' | 'sunny' | 'rain' | 'night';
@@ -248,7 +303,7 @@ export interface CustomTheme {
 
 export type SectionId =
   | 'about' | 'work' | 'projects' | 'education' | 'research'
-  | 'talks' | 'volunteering' | 'awards' | 'connect';
+  | 'writing' | 'talks' | 'volunteering' | 'awards' | 'connect';
 
 export interface SiteContent {
   site: {
@@ -278,6 +333,8 @@ export interface SiteContent {
   projects: Project[];
   education: EducationEntry[];
   research: ResearchEntry[];
+  /** post list data; bodies are content/blog/<slug>.mdx */
+  writing: BlogPost[];
   talks: TalkEntry[];
   volunteering: VolunteeringEntry[];
   awards: AwardEntry[];

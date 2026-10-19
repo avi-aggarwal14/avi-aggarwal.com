@@ -69,6 +69,21 @@ body:not(.regular-cursor-enabled) .cursor-pointer { cursor: none !important; }
   animation: highlight-fill 1s ease-out forwards;
 }
 
+/* ---------- blog ---------- */
+.prose { font-size: .875rem; }
+.prose pre { background-color: #f4f4f5; border: 1px solid #e4e4e7; }
+.prose pre:is(.dark *, .night *) { background-color: #18181b; border-color: #27272a; }
+
+/* sugar-high syntax colours */
+:root {
+  --sh-class: #6f42c1; --sh-identifier: #24292f; --sh-sign: #24292e; --sh-string: #032f62;
+  --sh-keyword: #d73a49; --sh-comment: #6a737d; --sh-jsxliterals: #005cc5; --sh-property: #005cc5; --sh-entity: #6f42c1;
+}
+:is(.dark, .night) {
+  --sh-class: #4ec9b0; --sh-identifier: #9cdcfe; --sh-sign: #d4d4d4; --sh-string: #ce9178;
+  --sh-keyword: #569cd6; --sh-comment: #6a9955; --sh-jsxliterals: #9cdcfe; --sh-property: #9cdcfe; --sh-entity: #dcdcaa;
+}
+
 /* ---------- motion safety ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {

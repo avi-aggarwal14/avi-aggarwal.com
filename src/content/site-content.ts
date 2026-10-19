@@ -63,6 +63,17 @@ export interface Project {
   keywords: string[];
 }
 
+export interface BlogPost {
+  uid: string;
+  title: string;
+  description: string;
+  link: `/blog/${string}`;
+  /** display date, "Mon YYYY" */
+  date: MonthYear;
+  wip: boolean;
+  keywords: string[];
+}
+
 export interface SocialLink { id: string; label: string; link: string; keywords: string[] }
 
 export type ThemeId = 'system' | 'light' | 'dark' | 'sunny' | 'rain' | 'night';
@@ -77,7 +88,7 @@ export interface CustomTheme {
 
 export type SectionId =
   | 'about' | 'work' | 'projects' | 'education' | 'research'
-  | 'talks' | 'volunteering' | 'awards' | 'connect';
+  | 'writing' | 'talks' | 'volunteering' | 'awards' | 'connect';
 
 export interface SiteContent {
   site: {
@@ -107,6 +118,8 @@ export interface SiteContent {
   projects: Project[];
   education: EducationEntry[];
   research: ResearchEntry[];
+  /** post list data; bodies are content/blog/<slug>.mdx */
+  writing: BlogPost[];
   talks: TalkEntry[];
   volunteering: VolunteeringEntry[];
   awards: AwardEntry[];
@@ -340,6 +353,7 @@ export const siteContent: SiteContent = {
       "work",
       "projects",
       "education",
+      "writing",
       "talks",
       "volunteering",
       "awards",
@@ -350,6 +364,7 @@ export const siteContent: SiteContent = {
       navigation: "Navigation",
       work: "Work",
       education: "Education",
+      blogpost: "Writing",
       talks: "Talks",
       volunteering: "Volunteering",
       awards: "Awards",
@@ -364,6 +379,7 @@ export const siteContent: SiteContent = {
       "work",
       "projects",
       "education",
+      "writing",
       "talks",
       "volunteering",
       "awards",
@@ -373,6 +389,7 @@ export const siteContent: SiteContent = {
       "work",
       "projects",
       "education",
+      "writing",
       "talks",
       "volunteering"
     ],
@@ -697,6 +714,70 @@ export const siteContent: SiteContent = {
     }
   ],
   research: [],
+  writing: [
+    {
+      uid: "blog-4",
+      title: "How I met Rishi Sunak at Parliament",
+      description: "PMQs, a coffee shop and a debate on saving the UK Youth Parliament's funding. The day I met the former Prime Minister at Westminster.",
+      link: "/blog/how-i-met-rishi-sunak",
+      date: "Oct 2026",
+      wip: false,
+      keywords: [
+        "rishi sunak",
+        "parliament",
+        "pmqs",
+        "westminster",
+        "uk youth parliament",
+        "youth ambassador"
+      ]
+    },
+    {
+      uid: "blog-3",
+      title: "What my AI agents do while I'm in lessons",
+      description: "I run a UGC agency and I'm still in school, so AI agents do a lot of my work while I'm in class. Here's what they actually do.",
+      link: "/blog/what-my-ai-agents-do-while-im-in-lessons",
+      date: "Oct 2026",
+      wip: false,
+      keywords: [
+        "ai agents",
+        "automation",
+        "school",
+        "hypjam",
+        "productivity"
+      ]
+    },
+    {
+      uid: "blog-2",
+      title: "A pretty bad hackathon project got me a founding engineer job",
+      description: "Why I go to so many hackathons and tech events, and how a duck that nags you to work led to a founding engineer role at 8x six days later.",
+      link: "/blog/a-bad-hackathon-project-got-me-a-job",
+      date: "Oct 2026",
+      wip: false,
+      keywords: [
+        "hackathons",
+        "tech events",
+        "8x",
+        "founding engineer",
+        "networking"
+      ]
+    },
+    {
+      uid: "blog-1",
+      title: "How I ended up working at Cluely's office in New York for a week",
+      description: "One video application, a next day flight from London, and a week helping Cluely launch Dare. What it was actually like.",
+      link: "/blog/a-week-at-cluely-in-new-york",
+      date: "Sep 2026",
+      wip: false,
+      keywords: [
+        "cluely",
+        "dare",
+        "new york",
+        "internship",
+        "ugc",
+        "marketing"
+      ]
+    }
+  ],
   talks: [
     {
       id: "talk5",

@@ -1,4 +1,5 @@
 import { siteContent, type DateRangeFields, type SectionId } from '@/content/site-content';
+import { findPost, formatPostDate, originalLine, publishedPosts, readPostSource, stripFrontmatter, type PostFrontmatter } from '@/lib/blog';
 import { formatRange } from '@/lib/dates';
 import { sectionTitle } from '@/lib/sections';
 import { SITE_URL } from '@/lib/site-url';
@@ -45,6 +46,9 @@ function homepageMarkdown(): string {
       case 'research':
         section(id, c.research.filter((r) => !r.wip).map((r) => `- **${r.title}** at ${org(r.institution, r.link)}${SEP}${loc(r.locationId)}${range(r)}`));
         break;
+      case 'writing':
+        section(id, publishedPosts().map((post) => `- [${post.title}](${SITE_URL}${post.link})${SEP}${post.description}${SEP}${post.date}`));
+        break;
       case 'talks':
         section(id, c.talks.filter((t) => !t.wip).map((t) => `- **${t.title}**${SEP}${org(t.event, t.link)}${SEP}${loc(t.locationId)}${SEP}${t.date}`));
         break;
@@ -62,9 +66,26 @@ function homepageMarkdown(): string {
   return out.join('\n');
 }
 
-/** Markdown twin of the homepage: /index.md (rewritten here). */
+/** Markdown twin of a post: title, description, date, the body as written, then the link to where it first appeared. */
+async function postMarkdown(slug: string): Promise<string | null> {
+  const post = findPost(slug);
+  const source = post ? await readPostSource(slug) : null;
+  if (!post || !source) return null;
+  const { body, frontmatter } = stripFrontmatter(source);
+  const date = frontmatter.date ? `*${formatPostDate(frontmatter.date)}*\n\n` : '';
+  const line = originalLine(frontmatter as PostFrontmatter);
+  const origin = line ? `\n\n${line.prefix}[${line.text}](${line.href})\n` : '\n';
+  const text = body.replace(/<ProjectEmbed[^>]*\/>\n?/g, '').trim();
+  return `# ${post.title}\n\n> ${post.description}\n\n${date}${text}${origin}`;
+}
+
+/** Markdown twins of the HTML pages: /index.md (homepage) and /blog/<slug>.md (both rewritten here). */
 export async function GET(_request: Request, context: { params: Promise<{ path?: string[] }> }) {
   const { path = [] } = await context.params;
   if (path.length === 0 || (path.length === 1 && path[0] === 'index')) return md(homepageMarkdown());
+  if (path.length === 2 && path[0] === 'blog') {
+    const text = await postMarkdown(path[1]);
+    if (text) return md(text);
+  }
   return new Response('Not found', { status: 404 });
 }

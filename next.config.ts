@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         { source: '/index.md', destination: '/api/md/index' },
+        { source: '/blog/:slug.md', destination: '/api/md/blog/:slug' },
         // first-party proxy for PostHog (EU cloud), used by src/components/shell/PostHogAnalytics.tsx
         { source: '/relay/static/:path*', destination: 'https://eu-assets.i.posthog.com/static/:path*' },
         { source: '/relay/array/:path*', destination: 'https://eu-assets.i.posthog.com/array/:path*' },
@@ -38,6 +39,8 @@ const nextConfig: NextConfig = {
     const sitemap = '</sitemap.xml>; rel="sitemap"; type="application/xml"';
     return [
       { source: '/', headers: [{ key: 'Link', value: `</index.md>; rel="alternate"; type="text/markdown", ${sitemap}` }] },
+      // post pages only: the slug pattern has no dot, so the /blog/<slug>.md twins do not get a header pointing at <slug>.md.md
+      { source: '/blog/:slug([a-z0-9-]+)', headers: [{ key: 'Link', value: `</blog/:slug.md>; rel="alternate"; type="text/markdown", ${sitemap}` }] },
     ];
   },
   async redirects() {

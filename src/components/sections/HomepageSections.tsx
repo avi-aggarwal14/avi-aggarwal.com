@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { SECTION_VARIANTS } from '@/components/sections/Section';
 import { EntrySection } from '@/components/sections/EntrySection';
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
+import { WritingSection } from '@/components/sections/WritingSection';
 import { ConnectSection } from '@/components/sections/ConnectSection';
 import { Footer } from '@/components/shell/Footer';
 import { SocialIcons } from '@/components/shell/SocialIcons';
@@ -11,7 +12,7 @@ import { CommandBarTrigger } from '@/components/shell/CommandBarTrigger';
 import { TimelineProvider } from '@/components/popups/timeline-context';
 import { asciiBanner } from '@/lib/ascii';
 import type { EntryRowData } from '@/lib/rows';
-import type { ActivityEntry, Project, SectionId } from '@/content/site-content';
+import type { ActivityEntry, BlogPost, Project, SectionId } from '@/content/site-content';
 
 export type HomepageData = {
   about: string;
@@ -26,6 +27,8 @@ export type HomepageData = {
   volunteering: EntryRowData[];
   awards: EntryRowData[];
   projects: Project[];
+  /** raw list (the section renders when this is non-empty; wip posts are filtered inside) */
+  writing: BlogPost[];
   /** every live activity, dateless ones included; the popups filter as they need */
   timeline: ActivityEntry[];
 };
@@ -69,6 +72,8 @@ export function HomepageSections(data: HomepageData) {
         return entry(id, data.education);
       case 'research':
         return entry(id, data.research);
+      case 'writing':
+        return data.writing.length > 0 ? <WritingSection key={id} posts={data.writing} transition={transition} /> : null;
       case 'talks':
         return entry(id, data.talks);
       case 'volunteering':

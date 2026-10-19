@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { AnimatePresence, motion } from 'motion/react';
 import { Command, Inbox } from 'lucide-react';
@@ -19,10 +20,10 @@ import { NAV_SECTIONS } from '@/lib/sections';
 import { ALL_THEMES } from '@/lib/themes';
 import { cn } from '@/lib/utils';
 import { fireConfetti } from '@/components/shell/confetti';
-import { CONFETTI_ICON, NAVIGATION_ICONS, PROJECT_IMAGE_ICON, PROJECT_VIDEO_ICON, SOCIAL_ICONS, THEME_ICONS } from '@/components/shell/command-bar-icons';
+import { BLOG_ICON, CONFETTI_ICON, NAVIGATION_ICONS, PROJECT_IMAGE_ICON, PROJECT_VIDEO_ICON, SOCIAL_ICONS, THEME_ICONS } from '@/components/shell/command-bar-icons';
 import { hasDates, siteContent } from '@/content/site-content';
 
-type ResultType = 'navigation' | 'work' | 'education' | 'research' | 'talks' | 'volunteering' | 'awards' | 'project' | 'action' | 'social';
+type ResultType = 'navigation' | 'work' | 'education' | 'research' | 'talks' | 'volunteering' | 'awards' | 'project' | 'blogpost' | 'action' | 'social';
 
 type Result = {
   id: string;
@@ -40,7 +41,7 @@ type Result = {
 };
 
 /** Fixed render order (also the flat index order for arrow navigation). */
-const GROUP_ORDER: ResultType[] = ['navigation', 'work', 'education', 'research', 'talks', 'volunteering', 'awards', 'project', 'action', 'social'];
+const GROUP_ORDER: ResultType[] = ['navigation', 'work', 'education', 'research', 'talks', 'volunteering', 'awards', 'project', 'blogpost', 'action', 'social'];
 
 const GROUP_SYNONYMS: Record<ResultType, string[]> = {
   navigation: ['navigation', 'navigate', 'goto', 'menu'],
@@ -51,6 +52,7 @@ const GROUP_SYNONYMS: Record<ResultType, string[]> = {
   volunteering: ['volunteering', 'volunteer', 'volunteer work', 'community'],
   awards: ['awards', 'award', 'scholarship', 'fellowship', 'grant', 'honor'],
   project: ['projects', 'portfolio'],
+  blogpost: ['blogs', 'posts', 'writings', 'articles'],
   action: ['actions', 'theme', 'settings'],
   social: ['social', 'contact', 'connect', 'follow', 'links'],
 };
@@ -76,6 +78,7 @@ function matches(item: Result, q: string, yearQuery: number | null, matchedTypes
 /** ⌘K command palette: navigation, grouped keyword search, actions and socials. */
 export function CommandBar() {
   const mounted = useMounted();
+  const router = useRouter();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const entries = useActivityEntries();
   const [isOpen, setIsOpen] = useState(false);
@@ -111,7 +114,7 @@ export function CommandBar() {
   );
 
   const allItems = useMemo<Result[]>(() => {
-    const { projects, socials, commandBar } = siteContent;
+    const { projects, writing, socials, commandBar } = siteContent;
     const navigation: Result[] = [...NAV_SECTIONS.map((s) => ({ label: s.label, type: s.type })), { label: capitalise('connect'), type: 'connect' as const }].map((s) => ({
       id: `nav-${s.type}`,
       title: s.label,
@@ -142,6 +145,21 @@ export function CommandBar() {
         keywords: p.keywords,
         icon: p.videos?.length ? PROJECT_VIDEO_ICON : PROJECT_IMAGE_ICON,
         action: () => goToEntry(p.id),
+      }));
+    const posts: Result[] = writing
+      .filter((post) => !post.wip && post.title !== 'Coming Soon')
+      .map((post) => ({
+        id: post.uid,
+        title: post.title,
+        subtitle: post.description,
+        type: 'blogpost' as const,
+        url: post.link,
+        keywords: post.keywords,
+        icon: BLOG_ICON,
+        action: () => {
+          router.push(post.link);
+          close();
+        },
       }));
     const current = theme ?? resolvedTheme ?? 'light';
     const actions: Result[] = [
@@ -181,8 +199,8 @@ export function CommandBar() {
       action: () => window.open(s.link, '_blank'),
     }));
     void commandBar;
-    return [...navigation, ...timeline, ...projectItems, ...actions, ...socialItems];
-  }, [entries, theme, resolvedTheme, setTheme, close, goToSection, goToEntry]);
+    return [...navigation, ...timeline, ...projectItems, ...posts, ...actions, ...socialItems];
+  }, [entries, theme, resolvedTheme, setTheme, router, close, goToSection, goToEntry]);
 
   const results = useMemo(() => {
     if (!query) return allItems;
