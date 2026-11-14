@@ -192,7 +192,7 @@ export const siteContent: SiteContent = {
     wordmark: "/generated/aviaggarwal.svg",
     footerWordmark: "/generated/footer-wordmark.svg",
     favicon: "/favicon.svg",
-    meetRedirect: "https://cal.com/avi-aggarwal-hypjam/intro"
+    meetRedirect: "https://cal.com/avi-aggarwal/intro"
   },
   socials: [
     {
@@ -582,7 +582,7 @@ export const siteContent: SiteContent = {
           label: "Repository"
         },
         {
-          url: "https://cal.com/avi-aggarwal-hypjam/intro",
+          url: "https://cal.com/avi-aggarwal/intro",
           logo: "/icons/calendar.svg",
           label: "Book a call"
         }
