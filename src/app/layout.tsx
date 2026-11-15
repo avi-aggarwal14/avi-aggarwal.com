@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   ...socialMetadata(site.title),
   icons: [
     { rel: 'icon', url: '/favicon.ico', type: 'image/x-icon' },
-    { rel: 'icon', url: '/favicon.svg', type: 'image/svg+xml', sizes: 'any' },
+    { rel: 'icon', url: '/icon.png', type: 'image/png', sizes: '256x256' },
     { rel: 'apple-touch-icon', url: '/apple-touch-icon.png', sizes: '180x180' },
   ],
 };
