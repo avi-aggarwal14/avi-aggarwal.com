@@ -185,7 +185,7 @@ export const siteContent: SiteContent = {
   profile: {
     name: "Avi Aggarwal",
     handle: "aviaggarwal",
-    role: "Founder & CMO",
+    role: "Founder",
     about: "I'm 15, and I build things. I run hypjam, a UGC agency in London, and I co-founded Yummers, a food app. I spent a week with Cluely's marketing team in New York and worked as a founding engineer at 8x. I also wrote dare-mcp-server, an open-source MCP server that lets Claude generate AI video. Outside tech, I'm one of Barnet's two elected Youth Ambassadors, and in October the borough's head teachers agreed to start testing my financial education resources in their schools.",
     email: "avi@hypjam.com",
     avatar: "/profile.png",
