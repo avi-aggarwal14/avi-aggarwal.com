@@ -13,6 +13,7 @@ import { GlassHeader } from '@/components/shell/GlassHeader';
 import { Header } from '@/components/shell/Header';
 import { SiteFooter } from '@/components/shell/SiteFooter';
 import { PostHogAnalytics } from '@/components/shell/PostHogAnalytics';
+import { FloatingCta } from '@/components/cta/FloatingCta';
 import { LANG, ROBOTS, profileUrls, socialMetadata } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site-url';
 
@@ -80,6 +81,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
               <Header />
               {children}
               <SiteFooter />
+              <FloatingCta />
             </main>
           </div>
         </ThemeProvider>

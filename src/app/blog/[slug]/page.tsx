@@ -4,6 +4,7 @@ import { compileMDX } from 'next-mdx-remote/rsc';
 import { mdxComponents } from '@/components/blog/mdx-components';
 import { ReadingProgress } from '@/components/blog/ReadingProgress';
 import { CopyUrlButton } from '@/components/blog/CopyUrlButton';
+import { BlogEndCta } from '@/components/cta/BlogEndCta';
 import { siteContent } from '@/content/site-content';
 import { findPost, formatPostDate, originalLine, postDateTime, publishedPosts, readPostMetaSync, readPostSource, slugOf, stripFrontmatter, type PostFrontmatter } from '@/lib/blog';
 import { blogPostingJsonLdHtml } from '@/lib/seo';
@@ -93,6 +94,7 @@ export default async function BlogPostPage({ params }: Params) {
           </p>
         )}
       </article>
+      <BlogEndCta />
     </>
   );
 }

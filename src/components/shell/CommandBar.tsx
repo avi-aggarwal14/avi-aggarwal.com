@@ -20,10 +20,10 @@ import { NAV_SECTIONS } from '@/lib/sections';
 import { ALL_THEMES } from '@/lib/themes';
 import { cn } from '@/lib/utils';
 import { fireConfetti } from '@/components/shell/confetti';
-import { BLOG_ICON, CONFETTI_ICON, NAVIGATION_ICONS, PROJECT_IMAGE_ICON, PROJECT_VIDEO_ICON, SOCIAL_ICONS, THEME_ICONS } from '@/components/shell/command-bar-icons';
+import { BLOG_ICON, CONFETTI_ICON, CTA_ICON, NAVIGATION_ICONS, PROJECT_IMAGE_ICON, PROJECT_VIDEO_ICON, SOCIAL_ICONS, THEME_ICONS } from '@/components/shell/command-bar-icons';
 import { hasDates, siteContent } from '@/content/site-content';
 
-type ResultType = 'navigation' | 'work' | 'education' | 'research' | 'talks' | 'volunteering' | 'awards' | 'project' | 'blogpost' | 'action' | 'social';
+type ResultType = 'cta' | 'navigation' | 'work' | 'education' | 'research' | 'talks' | 'volunteering' | 'awards' | 'project' | 'blogpost' | 'action' | 'social';
 
 type Result = {
   id: string;
@@ -40,10 +40,11 @@ type Result = {
   action: () => void;
 };
 
-/** Fixed render order (also the flat index order for arrow navigation). */
-const GROUP_ORDER: ResultType[] = ['navigation', 'work', 'education', 'research', 'talks', 'volunteering', 'awards', 'project', 'blogpost', 'action', 'social'];
+/** Fixed render order (also the flat index order for arrow navigation); the booking item comes first, above Navigation, with no group header. */
+const GROUP_ORDER: ResultType[] = ['cta', 'navigation', 'work', 'education', 'research', 'talks', 'volunteering', 'awards', 'project', 'blogpost', 'action', 'social'];
 
 const GROUP_SYNONYMS: Record<ResultType, string[]> = {
+  cta: [],
   navigation: ['navigation', 'navigate', 'goto', 'menu'],
   work: ['work', 'job', 'career', 'employment', 'experience'],
   education: ['education', 'school', 'degree', 'university', 'study'],
@@ -114,7 +115,23 @@ export function CommandBar() {
   );
 
   const allItems = useMemo<Result[]>(() => {
-    const { projects, writing, socials, commandBar } = siteContent;
+    const { projects, writing, socials, commandBar, cta } = siteContent;
+    // the booking social is promoted to the first result (so it is never listed twice); its keywords join the CTA's own
+    const bookingSocial = socials.find((s) => s.link === cta.href);
+    const booking: Result[] = [
+      {
+        id: 'cta-book-a-call',
+        title: cta.label,
+        subtitle: cta.commandBar.subtitle,
+        type: 'cta',
+        icon: CTA_ICON,
+        keywords: [...new Set([...cta.commandBar.keywords, ...(bookingSocial?.keywords ?? [])])],
+        action: () => {
+          router.push(cta.href);
+          close();
+        },
+      },
+    ];
     const navigation: Result[] = [...NAV_SECTIONS.map((s) => ({ label: s.label, type: s.type })), { label: capitalise('connect'), type: 'connect' as const }].map((s) => ({
       id: `nav-${s.type}`,
       title: s.label,
@@ -188,18 +205,25 @@ export function CommandBar() {
         },
       })),
     ];
-    const socialItems: Result[] = socials.map((s) => ({
-      id: s.id,
-      title: s.label,
-      subtitle: 'Open in new tab',
-      type: 'social' as const,
-      url: s.link,
-      icon: SOCIAL_ICONS[s.label],
-      keywords: s.keywords,
-      action: () => window.open(s.link, '_blank'),
-    }));
+    const socialItems: Result[] = socials
+      .filter((s) => s !== bookingSocial)
+      .map((s) => ({
+        id: s.id,
+        title: s.label,
+        subtitle: s.link.startsWith('/') ? undefined : 'Open in new tab',
+        type: 'social' as const,
+        url: s.link,
+        icon: SOCIAL_ICONS[s.label],
+        keywords: s.keywords,
+        action: () => {
+          if (s.link.startsWith('/')) {
+            router.push(s.link);
+            close();
+          } else window.open(s.link, '_blank');
+        },
+      }));
     void commandBar;
-    return [...navigation, ...timeline, ...projectItems, ...posts, ...actions, ...socialItems];
+    return [...booking, ...navigation, ...timeline, ...projectItems, ...posts, ...actions, ...socialItems];
   }, [entries, theme, resolvedTheme, setTheme, router, close, goToSection, goToEntry]);
 
   const results = useMemo(() => {
@@ -399,9 +423,11 @@ export function CommandBar() {
                           const base = flatResults.findIndex((r) => r.type === group);
                           return (
                             <div key={group}>
-                              <div className="px-3 py-2">
-                                <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500">{commandBar.groupLabels[group] ?? capitalise(group)}</p>
-                              </div>
+                              {group !== 'cta' && (
+                                <div className="px-3 py-2">
+                                  <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500">{commandBar.groupLabels[group] ?? capitalise(group)}</p>
+                                </div>
+                              )}
                               <div>
                                 {items.map((result, i) => {
                                   const index = base + i;
@@ -413,6 +439,7 @@ export function CommandBar() {
                                     <button
                                       key={result.id}
                                       type="button"
+                                      data-ph-capture-attribute-cta={result.type === 'cta' ? 'command-bar' : undefined}
                                       className={cn('group relative flex w-full items-center gap-3 rounded-full px-3 py-2 text-left', selected && 'bg-zinc-200 dark:bg-zinc-800')}
                                       onClick={() => onSelect(result)}
                                       onMouseEnter={() => handleMouseEnter(index)}

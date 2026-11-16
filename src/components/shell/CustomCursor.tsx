@@ -27,6 +27,7 @@ export function CustomCursor() {
   const [isOverScrollbar, setIsOverScrollbar] = useState(false);
   const [isZoomIn, setIsZoomIn] = useState(false);
   const [isMagneticSocial, setIsMagneticSocial] = useState(false);
+  const [isSolidCta, setIsSolidCta] = useState(false);
   const [isOverInput, setIsOverInput] = useState(false);
   const [isOverEmbed, setIsOverEmbed] = useState(false);
   const [isMapInteractive, setIsMapInteractive] = useState(false);
@@ -42,6 +43,7 @@ export function CustomCursor() {
     setIsOverInteractive(!!el?.closest('a, button, .cursor-pointer'));
     setIsZoomIn(!!el?.closest('.cursor-zoom-in'));
     setIsMagneticSocial(!!el?.closest('.magnetic-social-link'));
+    setIsSolidCta(!!el?.closest('.cta-solid'));
     setIsOverInput(!!el?.closest('input, textarea, [contenteditable="true"]'));
     const inMap = !!el?.closest('.maplibregl-map');
     setIsMapInteractive(inMap && !!el?.closest('.maplibregl-marker, button'));
@@ -200,8 +202,9 @@ export function CustomCursor() {
   const opacity = isOverInteractive ? 0.7 : 1;
   const isDark = isDarkTheme(resolvedTheme);
   const invert = isMagneticSocial && !isDark;
-  const ink = invert || isDark ? 'white' : 'black';
-  const inkFaint = invert || isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)';
+  // the solid booking pills are zinc-900 in light and zinc-100 in dark, so the ring takes the opposite ink there
+  const ink = isSolidCta ? (isDark ? 'black' : 'white') : invert || isDark ? 'white' : 'black';
+  const inkFaint = ink === 'white' ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)';
 
   if (isHidden || !hasMoved || isOverScrollbar || isOverInput || isOverEmbed) return null;
 

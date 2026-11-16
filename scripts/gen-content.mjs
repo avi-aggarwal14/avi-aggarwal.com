@@ -118,7 +118,7 @@ for (const [id, n] of Object.entries(visibleCounts)) {
   }
 }
 
-// Hero and footer social rows: labels resolve to socials[].label, no duplicates (Luma is deliberately absent, Meet lives in the glass nav).
+// Hero and footer social rows: labels resolve to socials[].label, no duplicates (Luma is deliberately absent; the booking social has no brand glyph and lives in Connect, the glass nav and the command bar).
 for (const [where, labels] of [['hero.socials', data.hero?.socials], ['footer.socials', data.footer?.socials]]) {
   if (!Array.isArray(labels) || labels.length === 0) throw new Error(`${where}: expected a non-empty list of social labels`);
   for (const label of labels) if (!data.socials.some((s) => s.label === label)) throw new Error(`${where}: "${label}" is not a socials[].label`);
@@ -177,6 +177,43 @@ if (missing.size) throw new Error(`missing files:\n  ${[...missing].join('\n  ')
     if (/^[a-f0-9]{32}\.txt$/.test(file) && file !== `${seo.indexNowKey}.txt`) fs.unlinkSync(`public/${file}`);
   }
   fs.writeFileSync(`public/${seo.indexNowKey}.txt`, seo.indexNowKey);
+}
+
+// Book a call (CTA-BRIEF): one href for every booking link, copy for each placement, and the Connect intro's linked lead.
+{
+  const { cta, connect, socials } = data;
+  const str = (v, where) => {
+    if (typeof v !== 'string' || !v.trim()) throw new Error(`${where} is required`);
+  };
+  if (!cta || typeof cta !== 'object') throw new Error('cta block is required');
+  if (typeof cta.href !== 'string' || !/^\/[a-z0-9-]+$/.test(cta.href)) throw new Error('cta.href must be an internal path such as "/call"');
+  str(cta.label, 'cta.label');
+  str(cta.bio, 'cta.bio');
+  if (!Array.isArray(cta.between) || cta.between.length === 0) throw new Error('cta.between must list the between-section rows');
+  const seenAfter = new Set();
+  for (const row of cta.between) {
+    str(row.text, 'cta.between[].text');
+    const i = order.indexOf(row.after);
+    if (i === -1 || row.after === 'about' || row.after === 'connect') throw new Error(`cta.between: "${row.after}" is not a content section in sections.order`);
+    if (order[i + 1] === 'connect') throw new Error(`cta.between: a row after "${row.after}" would sit directly before Connect`);
+    if (seenAfter.has(row.after)) throw new Error(`cta.between: two rows after "${row.after}"`);
+    seenAfter.add(row.after);
+  }
+  str(cta.end?.title, 'cta.end.title');
+  str(cta.end?.text, 'cta.end.text');
+  str(cta.blogEnd, 'cta.blogEnd');
+  str(cta.commandBar?.subtitle, 'cta.commandBar.subtitle');
+  if (!Array.isArray(cta.commandBar?.keywords) || cta.commandBar.keywords.some((k) => typeof k !== 'string' || !k)) throw new Error('cta.commandBar.keywords must be a list of strings');
+  str(connect.introLinkText, 'connect.introLinkText');
+  if (!connect.intro.startsWith(connect.introLinkText)) throw new Error('connect.introLinkText must be the leading part of connect.intro');
+  const booking = socials.find((s) => s.link === cta.href);
+  if (!booking || booking.label !== cta.label) throw new Error(`socials: one entry must link to ${cta.href} and be labelled "${cta.label}" (it is the first Connect pill)`);
+  if (connect.links[0] !== cta.label) throw new Error(`connect.links: "${cta.label}" must be the first pill`);
+  if (data.profile.meetRedirect !== cta.href) throw new Error(`profile.meetRedirect must be ${cta.href} so /meet lands on the booking page`);
+  str(data.seo?.personDescription, 'seo.personDescription');
+  // every booking link goes through cta.href; Cal.com itself is embedded only by src/app/call/page.tsx
+  const calUrl = /https?:\/\/(app\.)?cal\.com/i.exec(JSON.stringify(data));
+  if (calUrl) throw new Error(`content links to cal.com directly (${calUrl[0]}...); use ${cta.href}`);
 }
 
 // No em dash (U+2014) anywhere in the shipped content (the character is built from its code point so this script passes the same grep).
@@ -339,7 +376,23 @@ export interface SiteContent {
   volunteering: VolunteeringEntry[];
   awards: AwardEntry[];
   locations: Record<string, Location>;
-  connect: { intro: string; email: string; links: string[] };
+  /** introLinkText is the leading part of intro that links to cta.href; the email link follows */
+  connect: { intro: string; introLinkText: string; email: string; links: string[] };
+  /** Every "Book a call" string. href is the one booking route; components read it from here and never hard-code it. */
+  cta: {
+    href: \`/\${string}\`;
+    label: string;
+    /** sentence rendered right after profile.about, linked to href */
+    bio: string;
+    /** slim one-line rows rendered after these homepage sections (never directly before Connect) */
+    between: { after: SectionId; text: string }[];
+    /** closing block after Connect, before the footer */
+    end: { title: string; text: string };
+    /** line under every post, followed by the button */
+    blogEnd: string;
+    /** the first palette result; keywords extend the booking social's own */
+    commandBar: { subtitle: string; keywords: string[] };
+  };
   /** "{year}" is replaced with the current year; credit renders under the control bar in the same muted style; socials is the icon row next to it */
   footer: { copyright: string; credit?: { text: string; url: string }; socials: string[] };
   /** visitedCountries is a GeoJSON file built from map.visitedCountryCodes (scripts/gen-visited-countries.mjs) */
@@ -362,6 +415,8 @@ export interface SiteContent {
     extraSameAs: string[];
     /** SoftwareSourceCode blocks: the project's GitHub link is the codeRepository, its link the url */
     sourceCode: { projectId: string; programmingLanguage: string; license: string }[];
+    /** Person.description in the JSON-LD graph (kept apart from site.description, which carries the booking line) */
+    personDescription: string;
   };
   /** Asset configuration: paths and per-file rendering rules for the files in public/. */
   assets: {

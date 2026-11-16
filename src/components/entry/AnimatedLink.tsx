@@ -1,5 +1,6 @@
 'use client';
 import { useState, type MouseEventHandler, type ReactNode } from 'react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 type AnimatedLinkProps = {
@@ -13,10 +14,12 @@ type AnimatedLinkProps = {
   rel?: string;
   type?: 'button' | 'submit';
   onClick?: MouseEventHandler<HTMLElement>;
+  /** PostHog autocapture position (`data-ph-capture-attribute-cta`) for booking links */
+  cta?: string;
 };
 
-/** Text link whose 1px underline grows left-to-right over 200ms on hover and retracts to the right. */
-export function AnimatedLink({ as = 'a', className, children, href, target, rel, type, onClick, ariaLabel }: AnimatedLinkProps) {
+/** Text link whose 1px underline grows left-to-right over 200ms on hover and retracts to the right. Internal hrefs (`/...`) render through next/link. */
+export function AnimatedLink({ as = 'a', className, children, href, target, rel, type, onClick, ariaLabel, cta }: AnimatedLinkProps) {
   const [hover, setHover] = useState(false);
   const style = {
     backgroundImage: 'linear-gradient(currentColor, currentColor)',
@@ -35,8 +38,15 @@ export function AnimatedLink({ as = 'a', className, children, href, target, rel,
       </button>
     );
   }
+  if (href?.startsWith('/')) {
+    return (
+      <Link href={href} target={target} rel={rel} aria-label={ariaLabel} data-ph-capture-attribute-cta={cta} className={classes} style={style} {...handlers}>
+        {children}
+      </Link>
+    );
+  }
   return (
-    <a href={href} target={target} rel={rel} aria-label={ariaLabel} className={classes} style={style} {...handlers}>
+    <a href={href} target={target} rel={rel} aria-label={ariaLabel} data-ph-capture-attribute-cta={cta} className={classes} style={style} {...handlers}>
       {children}
     </a>
   );

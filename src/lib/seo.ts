@@ -104,7 +104,7 @@ export function homepageJsonLd(): { '@context': string; '@graph': Record<string,
     familyName: family.join(' '),
     url: SITE_URL,
     image: { '@type': 'ImageObject', url: abs(profile.avatar), ...pngSize(profile.avatar) },
-    description: site.description,
+    description: seo.personDescription,
     jobTitle: employer.title,
     worksFor: { '@id': employerId },
     affiliation: seo.affiliations.map((id) => {

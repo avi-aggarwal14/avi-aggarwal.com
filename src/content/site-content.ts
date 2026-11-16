@@ -124,7 +124,23 @@ export interface SiteContent {
   volunteering: VolunteeringEntry[];
   awards: AwardEntry[];
   locations: Record<string, Location>;
-  connect: { intro: string; email: string; links: string[] };
+  /** introLinkText is the leading part of intro that links to cta.href; the email link follows */
+  connect: { intro: string; introLinkText: string; email: string; links: string[] };
+  /** Every "Book a call" string. href is the one booking route; components read it from here and never hard-code it. */
+  cta: {
+    href: `/${string}`;
+    label: string;
+    /** sentence rendered right after profile.about, linked to href */
+    bio: string;
+    /** slim one-line rows rendered after these homepage sections (never directly before Connect) */
+    between: { after: SectionId; text: string }[];
+    /** closing block after Connect, before the footer */
+    end: { title: string; text: string };
+    /** line under every post, followed by the button */
+    blogEnd: string;
+    /** the first palette result; keywords extend the booking social's own */
+    commandBar: { subtitle: string; keywords: string[] };
+  };
   /** "{year}" is replaced with the current year; credit renders under the control bar in the same muted style; socials is the icon row next to it */
   footer: { copyright: string; credit?: { text: string; url: string }; socials: string[] };
   /** visitedCountries is a GeoJSON file built from map.visitedCountryCodes (scripts/gen-visited-countries.mjs) */
@@ -147,6 +163,8 @@ export interface SiteContent {
     extraSameAs: string[];
     /** SoftwareSourceCode blocks: the project's GitHub link is the codeRepository, its link the url */
     sourceCode: { projectId: string; programmingLanguage: string; license: string }[];
+    /** Person.description in the JSON-LD graph (kept apart from site.description, which carries the booking line) */
+    personDescription: string;
   };
   /** Asset configuration: paths and per-file rendering rules for the files in public/. */
   assets: {
@@ -174,7 +192,7 @@ export const siteContent: SiteContent = {
     url: "https://avi-aggarwal.com",
     title: "Avi Aggarwal",
     titleTemplate: "%s | Avi Aggarwal",
-    description: "Avi Aggarwal is a founder in London. He runs hypjam, a UGC agency, co-founded Yummers, and built the open-source dare-mcp-server.",
+    description: "Avi Aggarwal is a founder in London. He runs hypjam, a UGC agency, co-founded Yummers and built dare-mcp-server. Book a call with him anytime.",
     twitterCreator: "@_avi_md",
     ogImageAlt: "Avi Aggarwal, founder of hypjam",
     locale: "en_GB",
@@ -192,7 +210,7 @@ export const siteContent: SiteContent = {
     wordmark: "/generated/aviaggarwal.svg",
     footerWordmark: "/generated/footer-wordmark.svg",
     favicon: "/favicon.svg",
-    meetRedirect: "https://cal.com/avi-aggarwal/intro"
+    meetRedirect: "/call"
   },
   socials: [
     {
@@ -269,8 +287,8 @@ export const siteContent: SiteContent = {
     },
     {
       id: "social-meet",
-      label: "Meet",
-      link: "/meet",
+      label: "Book a call",
+      link: "/call",
       keywords: [
         "meet",
         "meeting",
@@ -582,7 +600,7 @@ export const siteContent: SiteContent = {
           label: "Repository"
         },
         {
-          url: "https://cal.com/avi-aggarwal/intro",
+          url: "/call",
           logo: "/icons/calendar.svg",
           label: "Book a call"
         }
@@ -1062,17 +1080,55 @@ export const siteContent: SiteContent = {
     }
   },
   connect: {
-    intro: "Feel free to contact me at",
+    intro: "Book a call with me anytime, or email me at",
     email: "avi@hypjam.com",
     links: [
+      "Book a call",
       "X",
       "Instagram",
       "TikTok",
       "LinkedIn",
       "Github",
-      "Luma",
-      "Meet"
-    ]
+      "Luma"
+    ],
+    introLinkText: "Book a call with me anytime"
+  },
+  cta: {
+    href: "/call",
+    label: "Book a call",
+    bio: "Book a call with me anytime.",
+    between: [
+      {
+        after: "work",
+        text: "Want to talk about any of this?"
+      },
+      {
+        after: "projects",
+        text: "Building something? I'd love to hear about it."
+      },
+      {
+        after: "talks",
+        text: "Got a question? It's quicker on a call."
+      }
+    ],
+    end: {
+      title: "That's pretty much everything.",
+      text: "If anything on here caught your eye, book a call with me. Pick a time that works for you."
+    },
+    blogEnd: "Thanks for reading. If you want to talk about this (or anything else), book a call with me.",
+    commandBar: {
+      subtitle: "Pick a time to talk",
+      keywords: [
+        "book",
+        "call",
+        "meet",
+        "meeting",
+        "chat",
+        "talk",
+        "calendar",
+        "contact"
+      ]
+    }
   },
   footer: {
     copyright: "© {year} Avi Aggarwal",
@@ -1143,7 +1199,8 @@ export const siteContent: SiteContent = {
         license: "MIT"
       }
     ],
-    worksForEntityId: "https://hypjam.com/#org"
+    worksForEntityId: "https://hypjam.com/#org",
+    personDescription: "Avi Aggarwal is a founder in London. He runs hypjam, a UGC agency, co-founded Yummers, and built the open-source dare-mcp-server."
   },
   assets: {
     projectBackgroundsDir: "/projects/backgrounds",

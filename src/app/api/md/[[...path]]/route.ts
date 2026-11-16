@@ -17,7 +17,10 @@ function homepageMarkdown(): string {
   const range = (e: DateRangeFields) => (e.hideDates ? '' : `${SEP}${formatRange(e.start, e.end)}`);
   // an organisation without a public site is plain text, never an empty link
   const org = (name: string, link: string) => (link ? `[${name}](${link})` : name);
-  const out: string[] = [`# ${c.site.title}`, '', c.profile.about, ''];
+  // internal routes (the booking page) print as absolute URLs
+  const absolute = (url: string) => (url.startsWith('/') ? SITE_URL + url : url);
+  const bookingUrl = absolute(c.cta.href);
+  const out: string[] = [`# ${c.site.title}`, '', `${c.cta.label}: ${bookingUrl}`, '', `${c.profile.about} [${c.cta.bio}](${bookingUrl})`, ''];
   const section = (id: SectionId, lines: string[]) => {
     if (lines.length === 0) return;
     out.push(`## ${sectionTitle(id)}`, '', ...lines, '');
@@ -34,7 +37,7 @@ function homepageMarkdown(): string {
         const lines: string[] = [];
         for (const p of c.projects.filter((p) => !p.hide)) {
           lines.push(`### ${org(p.name, p.link)}`, '', p.description);
-          if (p.links.length) lines.push('', p.links.map((l) => `[${l.label}](${l.url})`).join(' · '));
+          if (p.links.length) lines.push('', p.links.map((l) => `[${l.label}](${absolute(l.url)})`).join(' · '));
           lines.push('');
         }
         section(id, lines);
@@ -61,7 +64,7 @@ function homepageMarkdown(): string {
     }
   }
   out.push(`## ${sectionTitle('connect')}`, '', `Email: [${c.connect.email}](mailto:${c.connect.email})`, '');
-  for (const s of c.socials) out.push(`- [${s.label}](${s.link.startsWith('/') ? SITE_URL + s.link : s.link})`);
+  for (const s of c.socials) out.push(`- [${s.label}](${absolute(s.link)})`);
   out.push('');
   return out.join('\n');
 }

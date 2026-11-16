@@ -2,14 +2,16 @@ import { siteContent } from '@/content/site-content';
 import { publishedPosts } from '@/lib/blog';
 import { SITE_URL } from '@/lib/site-url';
 
-/** llms.txt: primary markdown alternate, the writing list (markdown twins), discovery links and the use policy. */
+/** llms.txt: the booking line, primary markdown alternate, the writing list (markdown twins), discovery links and the use policy. */
 export function GET() {
-  const { site, profile } = siteContent;
+  const { site, profile, cta } = siteContent;
   const summary = site.description.replace(new RegExp(`^${profile.name} is (a |an |the )?`), '');
   const lines = [
     `# ${site.title}`,
     '',
     `> ${summary.charAt(0).toUpperCase()}${summary.slice(1)}`,
+    '',
+    `${cta.label}: ${SITE_URL}${cta.href}`,
     '',
     '## Primary Markdown',
     '',

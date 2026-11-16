@@ -1,15 +1,17 @@
 import type { MetadataRoute } from 'next';
+import { siteContent } from '@/content/site-content';
 import { postDateTime, publishedPosts, readPostMetaSync } from '@/lib/blog';
 import { BUILD_TIME } from '@/lib/build-time';
 import { SITE_URL } from '@/lib/site-url';
 
 /**
- * The homepage (lastModified = build time, the same value as ProfilePage.dateModified), then one entry per post
- * with lastModified = the post's date as the same date-time its BlogPosting datePublished carries.
+ * The homepage (lastModified = build time, the same value as ProfilePage.dateModified), the booking page, then one
+ * entry per post with lastModified = the post's date as the same date-time its BlogPosting datePublished carries.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: SITE_URL, lastModified: new Date(BUILD_TIME), changeFrequency: 'monthly', priority: 1 },
+    { url: `${SITE_URL}${siteContent.cta.href}`, lastModified: new Date(BUILD_TIME), changeFrequency: 'monthly', priority: 0.8 },
     ...publishedPosts().map((post) => {
       const date = readPostMetaSync(post)?.date;
       return {

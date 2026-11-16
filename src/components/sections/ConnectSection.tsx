@@ -1,13 +1,15 @@
 'use client';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion, type Transition } from 'motion/react';
 import { Magnetic } from '@/components/motion-primitives/magnetic';
+import { BookCallButton } from '@/components/cta/BookCallButton';
 import { HEADING_CLASS, SECTION_CLASS, SECTION_VARIANTS } from '@/components/sections/Section';
 import { sectionTitle } from '@/lib/sections';
 import { siteContent } from '@/content/site-content';
 
 export function ConnectSection({ transition }: { transition: Transition }) {
-  const { connect, socials, assets } = siteContent;
+  const { connect, socials, assets, cta } = siteContent;
   const links = connect.links
     .map((label) => socials.find((s) => s.label === label))
     .filter((s): s is NonNullable<typeof s> => Boolean(s));
@@ -16,14 +18,22 @@ export function ConnectSection({ transition }: { transition: Transition }) {
     <motion.section id="connect" className={SECTION_CLASS} variants={SECTION_VARIANTS} transition={transition}>
       <h2 className={HEADING_CLASS}>{sectionTitle('connect')}</h2>
       <p className="mb-5 text-zinc-600 dark:text-zinc-400">
-        {connect.intro}{' '}
+        {/* the leading part of the intro is the booking link; the email link after it is unchanged */}
+        <Link href={cta.href} data-ph-capture-attribute-cta="connect-intro" className="underline dark:text-zinc-300">
+          {connect.introLinkText}
+        </Link>
+        {connect.intro.slice(connect.introLinkText.length)}{' '}
         <a className="underline dark:text-zinc-300" href={`mailto:${connect.email}`}>
           {connect.email}
         </a>
       </p>
-      {/* gap-3 equals the original space-x-3; flex-wrap lets seven pills wrap on narrow screens instead of overflowing */}
+      {/* gap-3 equals the original space-x-3; flex-wrap lets the pills wrap on narrow screens instead of overflowing */}
       <div className="flex flex-wrap items-center justify-start gap-3">
-        {links.map((link) => (
+        {links.map((link) =>
+          link.link === cta.href ? (
+            // the booking pill: solid, internal, same tab, calendar glyph where the others carry the external arrow
+            <BookCallButton key={link.label} position="connect" size="sm" magnetic iconAfter />
+          ) : (
           <Magnetic key={link.label} springOptions={{ bounce: 0 }} intensity={0.3}>
             <a
               href={link.link}
@@ -43,7 +53,8 @@ export function ConnectSection({ transition }: { transition: Transition }) {
               </span>
             </a>
           </Magnetic>
-        ))}
+          ),
+        )}
       </div>
     </motion.section>
   );

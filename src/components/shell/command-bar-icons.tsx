@@ -3,7 +3,7 @@ import { BrandIcon } from '@/components/shell/brand-icons';
 import {
   Award,
   Briefcase,
-  CalendarDays,
+  Calendar,
   CloudRain,
   CloudSun,
   FlaskConical,
@@ -48,10 +48,12 @@ export const PROJECT_VIDEO_ICON = <Video className="size-4" />;
 export const PROJECT_IMAGE_ICON = <ImageIcon className="size-4" />;
 export const BLOG_ICON = <Signature className="size-4" />;
 export const CONFETTI_ICON = <PartyPopper className="size-4" />;
+/** The booking item's glyph (the same calendar as public/icons/calendar.svg). */
+export const CTA_ICON = <Calendar className="size-4" />;
 
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 
-/** Social glyphs keyed by the social label used in content (Github / X / Instagram / TikTok / LinkedIn / Luma / Meet). */
+/** Social glyphs keyed by the social label used in content (Github / X / Instagram / TikTok / LinkedIn / Luma / Book a call). */
 export const SOCIAL_ICONS: Record<string, ReactNode> = {
   Github: (
     <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true" {...stroke}>
@@ -70,5 +72,5 @@ export const SOCIAL_ICONS: Record<string, ReactNode> = {
   Instagram: <BrandIcon label="Instagram" className="size-4" />,
   TikTok: <BrandIcon label="TikTok" className="size-4" />,
   Luma: <Sparkle className="size-4" />,
-  Meet: <CalendarDays className="size-4" />,
+  'Book a call': <Calendar className="size-4" />,
 };

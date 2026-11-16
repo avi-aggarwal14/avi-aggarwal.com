@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
-import { CalendarDays } from 'lucide-react';
+import { BookCallButton } from '@/components/cta/BookCallButton';
 import { NAV_ITEMS } from '@/lib/sections';
 import { scrollToElement } from '@/lib/scroll';
 import { CONTENT_OVERLAY_HIDE, CONTENT_OVERLAY_SHOW } from '@/lib/events';
@@ -50,10 +50,11 @@ const NAV_BASE =
   'w-[95vw] max-w-5xl -translate-x-1/2 transform-gpu squircle-panel border border-zinc-200/20 bg-zinc-100/50 px-6 py-2 shadow-xl shadow-black/15 backdrop-blur-md will-change-transform';
 const NAV_DARK = 'dark:border-zinc-500/20 dark:bg-zinc-900/50 dark:shadow-zinc-900/15';
 const LOGO_LINK_CLASS = 'flex items-center gap-2 font-medium text-zinc-900 transition-transform hover:scale-105 dark:text-zinc-100';
-const MEET_PILL_CLASS =
-  'group relative inline-flex shrink-0 items-center gap-1.5 rounded-full bg-zinc-200 px-2.5 py-1 text-[13px] font-medium text-zinc-900 hover:bg-zinc-900 hover:text-zinc-50 hover:transition-colors hover:duration-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700';
 
-/** Two fixed glass navs (mobile `lg:hidden`, desktop `hidden lg:block`), shown after 100 px of scroll. */
+/**
+ * Two fixed glass navs (mobile `lg:hidden`, desktop `hidden lg:block`), shown after 100 px of scroll. Both carry the
+ * compact "Book a call" pill (in the bar itself on mobile, not inside the menu); it is left out on the booking page.
+ */
 export function GlassHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOverlayHidden, setIsOverlayHidden] = useState(false);
@@ -61,8 +62,8 @@ export function GlassHeader() {
   const navRef = useRef<HTMLElement>(null);
   const activeSection = useActiveSection();
   const pathname = usePathname();
-  const { profile, socials, assets } = siteContent;
-  const meet = socials.find((s) => s.label.toLowerCase() === 'meet');
+  const { profile, cta } = siteContent;
+  const onBookingPage = pathname.replace(/\/+$/, '') === cta.href;
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > SCROLL_THRESHOLD);
@@ -127,10 +128,6 @@ export function GlassHeader() {
     </Link>
   );
 
-  const externalIcon = (
-    <Image src={assets.externalLinkIcon} alt="" aria-hidden="true" className="size-3 group-hover:invert dark:invert group-hover:transition-all group-hover:duration-200" width={12} height={12} draggable={false} />
-  );
-
   return (
     <>
       {/* mobile */}
@@ -143,16 +140,19 @@ export function GlassHeader() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
             })}
-            <button
-              onClick={() => setIsMenuOpen((v) => !v)}
-              className="relative size-7 rounded-full p-0.5 transition-all hover:bg-zinc-200/80 dark:hover:bg-zinc-800/80"
-              aria-label="Toggle menu"
-            >
-              <div className="relative flex size-full items-center justify-center">
-                <motion.span animate={{ rotate: isMenuOpen ? 0 : 90 }} transition={{ duration: 0.2, bounce: 0 }} className="absolute h-0.5 w-3.5 bg-zinc-900 dark:bg-zinc-100" />
-                <motion.span className="absolute h-0.5 w-3.5 bg-zinc-900 dark:bg-zinc-100" />
-              </div>
-            </button>
+            <div className="flex items-center gap-2">
+              {!onBookingPage && <BookCallButton position="header" size="nav" onClick={() => setIsMenuOpen(false)} />}
+              <button
+                onClick={() => setIsMenuOpen((v) => !v)}
+                className="relative size-7 rounded-full p-0.5 transition-all hover:bg-zinc-200/80 dark:hover:bg-zinc-800/80"
+                aria-label="Toggle menu"
+              >
+                <div className="relative flex size-full items-center justify-center">
+                  <motion.span animate={{ rotate: isMenuOpen ? 0 : 90 }} transition={{ duration: 0.2, bounce: 0 }} className="absolute h-0.5 w-3.5 bg-zinc-900 dark:bg-zinc-100" />
+                  <motion.span className="absolute h-0.5 w-3.5 bg-zinc-900 dark:bg-zinc-100" />
+                </div>
+              </button>
+            </div>
           </div>
           <AnimatePresence>
             {isMenuOpen && (
@@ -179,18 +179,6 @@ export function GlassHeader() {
                       </a>
                     </li>
                   ))}
-                  {meet && (
-                    <li>
-                      <a
-                        href={meet.link}
-                        onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center justify-between rounded-full px-3 py-2 text-[13px] font-medium text-zinc-900 transition-colors hover:bg-zinc-200/80 dark:text-zinc-100 dark:hover:bg-zinc-800/80"
-                      >
-                        <span>{meet.label}</span>
-                        <Image src={assets.externalLinkIcon} alt="" aria-hidden="true" className="size-3 dark:invert" width={12} height={12} draggable={false} />
-                      </a>
-                    </li>
-                  )}
                 </ul>
               </motion.div>
             )}
@@ -219,13 +207,7 @@ export function GlassHeader() {
               );
             })}
           </ul>
-          {meet && (
-            <a href={meet.link} className={MEET_PILL_CLASS}>
-              <CalendarDays className="size-3 group-hover:transition-colors group-hover:duration-200" />
-              {meet.label}
-              <span className="group-hover:transition-all group-hover:duration-200">{externalIcon}</span>
-            </a>
-          )}
+          {!onBookingPage && <BookCallButton position="header" size="nav" />}
         </div>
       </nav>
     </>

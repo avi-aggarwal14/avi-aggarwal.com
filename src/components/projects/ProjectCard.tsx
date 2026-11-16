@@ -5,7 +5,7 @@ import { CardContainer } from '@/components/entry/CardContainer';
 import { AnimatedLink } from '@/components/entry/AnimatedLink';
 import { ProjectPreview } from '@/components/projects/ProjectPreview';
 import { getLogoImageClass } from '@/lib/logo-class';
-import type { Project } from '@/content/site-content';
+import { siteContent, type Project } from '@/content/site-content';
 
 export function ProjectCard({ project }: { project: Project }) {
   return (
@@ -27,12 +27,16 @@ export function ProjectCard({ project }: { project: Project }) {
         <p className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{project.description}</p>
         {project.links.length > 0 && (
           <div className="mt-2 flex items-center gap-3">
-            {project.links.map((link) => (
+            {project.links.map((link) => {
+              // the booking link stays on the site (same tab, next/link); everything else opens in a new tab
+              const booking = link.url === siteContent.cta.href;
+              return (
             <AnimatedLink
               key={`${link.url}-${link.label}`}
               href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={booking ? undefined : '_blank'}
+              rel={booking ? undefined : 'noopener noreferrer'}
+              cta={booking ? `project-${project.thumb.slug}` : undefined}
               ariaLabel={`${project.name} ${link.label}`}
               className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
             >
@@ -48,7 +52,8 @@ export function ProjectCard({ project }: { project: Project }) {
               />
               {link.label}
             </AnimatedLink>
-          ))}
+              );
+            })}
           </div>
         )}
       </div>
