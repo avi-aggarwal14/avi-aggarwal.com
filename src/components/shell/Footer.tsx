@@ -1,8 +1,9 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar } from 'lucide-react';
+import { Phone } from 'lucide-react';
 import { motion, type Transition, type Variants } from 'motion/react';
+import { BrandIcon } from '@/components/shell/brand-icons';
 import { LogoMark } from '@/components/shell/LogoMark';
 import { ThemeToggle, FOOTER_BUTTON_CLASS } from '@/components/shell/ThemeToggle';
 import { MuteButton } from '@/components/shell/MuteButton';
@@ -12,10 +13,10 @@ import { siteContent } from '@/content/site-content';
 
 type FooterProps = { variants?: Variants; transition?: Transition };
 
-/** Control bar (copyright, AI-summary links, theme controls), the credit line with the booking link and social icon row, and the oversized wordmark. */
+/** Control bar (copyright, AI-summary links, theme controls), the credit line with the booking link, the X follow link and the social icon row, and the oversized wordmark. */
 export function Footer({ variants, transition }: FooterProps) {
   const year = useCurrentYear();
-  const { profile, socials, ai, footer, assets, cta } = siteContent;
+  const { profile, socials, ai, footer, assets, cta, follow } = siteContent;
   const github = socials.find((s) => s.label.toLowerCase() === 'github')?.link ?? profile.wordmark;
   const [copyPrefix, copySuffix] = footer.copyright.split('{year}');
   const prompt = encodeURIComponent(ai.prompt);
@@ -53,7 +54,7 @@ export function Footer({ variants, transition }: FooterProps) {
           <ThemeToggle />
         </div>
       </div>
-      {/* second row: credit on the left; the booking link and the social icons on the right (under the theme controls); below sm they drop to their own line */}
+      {/* second row: credit on the left; the booking link, the X follow link and the social icons on the right (under the theme controls); below sm they drop to their own line and may wrap */}
       <div className="mt-1 flex flex-col items-start gap-y-1 px-4 sm:flex-row sm:items-center sm:justify-between">
         {footer.credit ? (
           <a href={footer.credit.url} target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-600 dark:text-zinc-400">
@@ -62,16 +63,26 @@ export function Footer({ variants, transition }: FooterProps) {
         ) : (
           <span />
         )}
-        <div className="flex items-center gap-x-1.5">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <Link
             href={cta.href}
             data-ph-capture-attribute-cta="footer"
             className="inline-flex items-center gap-1.5 text-xs text-zinc-600 transition-colors duration-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           >
-            <Calendar className="size-3" aria-hidden="true" />
+            <Phone className="size-3" aria-hidden="true" />
             {cta.label}
           </Link>
-          <SocialIcons labels={footer.socials} />
+          <a
+            href={follow.x.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-ph-capture-attribute-cta="follow-x-footer"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-600 transition-colors duration-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            <BrandIcon label={follow.x.name} className="size-3" />
+            {follow.x.label}
+          </a>
+          <SocialIcons labels={footer.socials} className="-ml-2" />
         </div>
       </div>
       <div aria-hidden="true" inert className="pointer-events-none -mx-4 mt-6 aspect-[2/1] overflow-hidden select-none md:mt-12 md:aspect-[8/1] lg:-mx-24">

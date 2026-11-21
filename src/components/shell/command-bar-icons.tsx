@@ -3,7 +3,6 @@ import { BrandIcon } from '@/components/shell/brand-icons';
 import {
   Award,
   Briefcase,
-  Calendar,
   CloudRain,
   CloudSun,
   FlaskConical,
@@ -15,6 +14,7 @@ import {
   Moon,
   MoonStar,
   PartyPopper,
+  Phone,
   Presentation,
   Signature,
   Sparkle,
@@ -48,8 +48,13 @@ export const PROJECT_VIDEO_ICON = <Video className="size-4" />;
 export const PROJECT_IMAGE_ICON = <ImageIcon className="size-4" />;
 export const BLOG_ICON = <Signature className="size-4" />;
 export const CONFETTI_ICON = <PartyPopper className="size-4" />;
-/** The booking item's glyph (the same calendar as public/icons/calendar.svg). */
-export const CTA_ICON = <Calendar className="size-4" />;
+/** The booking item's glyph: the phone handset every booking CTA carries. */
+export const CTA_ICON = <Phone className="size-4" />;
+/** The two follow rows' glyphs (the same brand paths as the hero buttons). */
+export const FOLLOW_ICONS: Record<'x' | 'instagram', ReactNode> = {
+  x: <BrandIcon label="X" className="size-4" />,
+  instagram: <BrandIcon label="Instagram" className="size-4" />,
+};
 
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 
@@ -72,5 +77,5 @@ export const SOCIAL_ICONS: Record<string, ReactNode> = {
   Instagram: <BrandIcon label="Instagram" className="size-4" />,
   TikTok: <BrandIcon label="TikTok" className="size-4" />,
   Luma: <Sparkle className="size-4" />,
-  'Book a call': <Calendar className="size-4" />,
+  'Book a call': <Phone className="size-4" />,
 };

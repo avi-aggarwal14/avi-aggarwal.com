@@ -20,7 +20,7 @@ import { NAV_SECTIONS } from '@/lib/sections';
 import { ALL_THEMES } from '@/lib/themes';
 import { cn } from '@/lib/utils';
 import { fireConfetti } from '@/components/shell/confetti';
-import { BLOG_ICON, CONFETTI_ICON, CTA_ICON, NAVIGATION_ICONS, PROJECT_IMAGE_ICON, PROJECT_VIDEO_ICON, SOCIAL_ICONS, THEME_ICONS } from '@/components/shell/command-bar-icons';
+import { BLOG_ICON, CONFETTI_ICON, CTA_ICON, FOLLOW_ICONS, NAVIGATION_ICONS, PROJECT_IMAGE_ICON, PROJECT_VIDEO_ICON, SOCIAL_ICONS, THEME_ICONS } from '@/components/shell/command-bar-icons';
 import { hasDates, siteContent } from '@/content/site-content';
 
 type ResultType = 'cta' | 'navigation' | 'work' | 'education' | 'research' | 'talks' | 'volunteering' | 'awards' | 'project' | 'blogpost' | 'action' | 'social';
@@ -33,6 +33,8 @@ type Result = {
   icon?: ReactNode;
   logo?: string;
   url?: string;
+  /** PostHog position for the booking and follow rows (`data-ph-capture-attribute-cta`) */
+  cta?: string;
   keywords?: string[];
   date?: string;
   startDate?: string;
@@ -115,8 +117,9 @@ export function CommandBar() {
   );
 
   const allItems = useMemo<Result[]>(() => {
-    const { projects, writing, socials, commandBar, cta } = siteContent;
-    // the booking social is promoted to the first result (so it is never listed twice); its keywords join the CTA's own
+    const { projects, writing, socials, commandBar, cta, follow } = siteContent;
+    // the booking social is promoted to the first result (so it is never listed twice); its keywords join the CTA's own.
+    // The two follow rows come right after it (new tab); the X and Instagram profile links stay in Socials.
     const bookingSocial = socials.find((s) => s.link === cta.href);
     const booking: Result[] = [
       {
@@ -124,6 +127,7 @@ export function CommandBar() {
         title: cta.label,
         subtitle: cta.commandBar.subtitle,
         type: 'cta',
+        cta: 'command-bar',
         icon: CTA_ICON,
         keywords: [...new Set([...cta.commandBar.keywords, ...(bookingSocial?.keywords ?? [])])],
         action: () => {
@@ -131,6 +135,23 @@ export function CommandBar() {
           close();
         },
       },
+      ...(['x', 'instagram'] as const).map((network): Result => {
+        const target = follow[network];
+        return {
+          id: `cta-follow-${network}`,
+          title: target.commandBarTitle,
+          subtitle: target.handle,
+          type: 'cta',
+          cta: `follow-${network === 'x' ? 'x' : 'ig'}-command-bar`,
+          icon: FOLLOW_ICONS[network],
+          url: target.href,
+          keywords: target.keywords,
+          action: () => {
+            window.open(target.href, '_blank', 'noopener,noreferrer');
+            close();
+          },
+        };
+      }),
     ];
     const navigation: Result[] = [...NAV_SECTIONS.map((s) => ({ label: s.label, type: s.type })), { label: capitalise('connect'), type: 'connect' as const }].map((s) => ({
       id: `nav-${s.type}`,
@@ -439,7 +460,7 @@ export function CommandBar() {
                                     <button
                                       key={result.id}
                                       type="button"
-                                      data-ph-capture-attribute-cta={result.type === 'cta' ? 'command-bar' : undefined}
+                                      data-ph-capture-attribute-cta={result.cta}
                                       className={cn('group relative flex w-full items-center gap-3 rounded-full px-3 py-2 text-left', selected && 'bg-zinc-200 dark:bg-zinc-800')}
                                       onClick={() => onSelect(result)}
                                       onMouseEnter={() => handleMouseEnter(index)}

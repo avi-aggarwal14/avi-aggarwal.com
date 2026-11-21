@@ -20,7 +20,22 @@ function homepageMarkdown(): string {
   // internal routes (the booking page) print as absolute URLs
   const absolute = (url: string) => (url.startsWith('/') ? SITE_URL + url : url);
   const bookingUrl = absolute(c.cta.href);
-  const out: string[] = [`# ${c.site.title}`, '', `${c.cta.label}: ${bookingUrl}`, '', `${c.profile.about} [${c.cta.bio}](${bookingUrl})`, ''];
+  // the follow lines point at the profiles; the bio's {x} / {instagram} placeholders become follow links like on the page
+  const x = c.socials.find((s) => s.id === 'social-x');
+  const instagram = c.socials.find((s) => s.id === 'social-instagram');
+  const followMd = (text: string) =>
+    text.replace('{x}', `[${c.follow.x.name}](${c.follow.x.href})`).replace('{instagram}', `[${c.follow.instagram.name}](${c.follow.instagram.href})`);
+  const bio = `[${c.cta.bioLinkText}](${bookingUrl})${followMd(c.cta.bio.slice(c.cta.bioLinkText.length))}`;
+  const out: string[] = [
+    `# ${c.site.title}`,
+    '',
+    `${c.cta.label}: ${bookingUrl}`,
+    ...(x ? [`${c.follow.x.label}: ${x.link}`] : []),
+    ...(instagram ? [`${instagram.label}: ${instagram.link}`] : []),
+    '',
+    `${c.profile.about} ${bio}`,
+    '',
+  ];
   const section = (id: SectionId, lines: string[]) => {
     if (lines.length === 0) return;
     out.push(`## ${sectionTitle(id)}`, '', ...lines, '');

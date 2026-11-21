@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { FollowLine } from '@/components/cta/FollowLine';
+import { siteContent } from '@/content/site-content';
 
 const CAL_LINK = 'avi-aggarwal/call';
 const CAL_URL = `https://cal.com/${CAL_LINK}`;
@@ -36,6 +38,10 @@ export default function CallPage() {
       >
         Open the booking page in a new tab
       </a>
+      {/* under the link: the two follow links, in the link's own muted style */}
+      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <FollowLine text={siteContent.cta.callFollow} position="call" linkClassName="underline underline-offset-4 dark:text-zinc-400" />
+      </p>
     </div>
   );
 }

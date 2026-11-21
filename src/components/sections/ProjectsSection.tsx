@@ -5,6 +5,7 @@ import { CollapsibleList } from '@/components/entry/CollapsibleList';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { ProjectPlaceholderCard } from '@/components/projects/ProjectPlaceholderCard';
 import { ProjectStatsTrigger } from '@/components/projects/ProjectStatsTrigger';
+import { ProjectCtaCard } from '@/components/cta/ProjectCtaCard';
 import { sectionTitle, visibleCount } from '@/lib/sections';
 import type { Project } from '@/content/site-content';
 
@@ -22,6 +23,7 @@ export function ProjectsSection({ projects, transition }: { projects: Project[];
         itemsClassName="grid grid-cols-1 gap-6 sm:grid-cols-2"
         keyExtractor={(project) => project.id}
         renderItem={(project) => <ProjectCard key={project.name} project={project} />}
+        renderTail={() => <ProjectCtaCard />}
         renderPlaceholder={() => <ProjectPlaceholderCard />}
       />
     </motion.section>

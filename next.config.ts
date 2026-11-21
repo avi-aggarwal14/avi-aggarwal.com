@@ -50,6 +50,8 @@ const nextConfig: NextConfig = {
         destination: siteContent.profile.meetRedirect,
         permanent: true, // 308
       },
+      // retired paths from content (removed posts): permanent, so an indexed URL never 404s
+      ...siteContent.redirects.map((r) => ({ source: r.source, destination: r.destination, permanent: true })),
       {
         // the old Vercel host is one site with the canonical domain: every path moves, permanently (308)
         source: '/:path*',

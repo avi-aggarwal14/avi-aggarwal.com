@@ -92,6 +92,45 @@ export function originalLine(frontmatter: PostFrontmatter): { href: string; pref
   return { href, prefix: 'Originally posted on ', text: frontmatter.source ?? new URL(href).hostname.replace(/^www\./, '') };
 }
 
+/**
+ * Inserts `tag` (one JSX line, e.g. `<BlogMidCta />`) at the block boundary closest to the middle of the article body:
+ * between two paragraphs or right before a heading, never right after a heading, never inside a code fence, never
+ * before the first or after the last block. The front matter stays in place and the MDX files stay as written.
+ */
+export function withMidCta(source: string, tag: string): string {
+  const match = /^---\n[\s\S]*?\n---\n?/.exec(source);
+  const head = match ? match[0] : '';
+  const body = source.slice(head.length);
+  // blocks: runs of lines separated by blank lines; a fenced code block is one block whatever it contains
+  const blocks: string[] = [];
+  let current: string[] = [];
+  let inFence = false;
+  for (const line of body.split('\n')) {
+    if (/^```/.test(line)) inFence = !inFence;
+    if (!inFence && line.trim() === '') {
+      if (current.length) blocks.push(current.join('\n'));
+      current = [];
+    } else current.push(line);
+  }
+  if (current.length) blocks.push(current.join('\n'));
+  if (blocks.length < 3) return source;
+  const total = blocks.reduce((n, b) => n + b.length, 0);
+  let best = -1;
+  let bestDistance = Infinity;
+  let seen = 0;
+  for (let i = 0; i < blocks.length - 1; i++) {
+    seen += blocks[i].length;
+    if (/^#{1,6}\s/.test(blocks[i])) continue; // not between a heading and its first paragraph
+    const distance = Math.abs(seen - total / 2);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = i;
+    }
+  }
+  if (best === -1) return source;
+  return `${head}${[...blocks.slice(0, best + 1), tag, ...blocks.slice(best + 1)].join('\n\n')}\n`;
+}
+
 /** "Building a Project Preview Component" -> "building-a-project-preview-component" */
 export function slugify(text: string): string {
   return text

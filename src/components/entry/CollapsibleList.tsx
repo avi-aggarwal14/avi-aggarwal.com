@@ -12,6 +12,8 @@ export type CollapsibleListProps<T> = {
   className?: string;
   itemsClassName?: string;
   renderPlaceholder?: () => ReactNode;
+  /** one extra tile after the items (the Projects booking tile): last of the visible set, counted for the placeholder's parity */
+  renderTail?: () => ReactNode;
 };
 
 const ITEM_VARIANTS = {
@@ -39,6 +41,7 @@ export function CollapsibleList<T>({
   className,
   itemsClassName,
   renderPlaceholder,
+  renderTail,
 }: CollapsibleListProps<T>) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAnimatingLayout, setIsAnimatingLayout] = useState(false);
@@ -48,7 +51,7 @@ export function CollapsibleList<T>({
   const visible = useMemo(() => items.slice(0, threshold), [items, threshold]);
   const hidden = useMemo(() => items.slice(threshold), [items, threshold]);
   const hiddenCount = hidden.length;
-  const shownCount = isExpanded ? items.length : Math.min(items.length, threshold);
+  const shownCount = (isExpanded ? items.length : Math.min(items.length, threshold)) + (renderTail ? 1 : 0);
   const layoutDuration = BASE_DURATION + (hiddenCount - 1) * STAGGER_STEP;
   const layoutTransition = { layout: { duration: layoutDuration, ease: LAYOUT_EASE } };
 
@@ -86,6 +89,8 @@ export function CollapsibleList<T>({
               </motion.div>
             ))}
         </AnimatePresence>
+
+        {renderTail?.()}
 
         <AnimatePresence initial={false} mode="popLayout">
           {renderPlaceholder && shownCount % 2 === 1 && (

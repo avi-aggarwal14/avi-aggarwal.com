@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { BookCallButton } from '@/components/cta/BookCallButton';
+import { BrandIcon } from '@/components/shell/brand-icons';
 import { NAV_ITEMS } from '@/lib/sections';
 import { scrollToElement } from '@/lib/scroll';
 import { CONTENT_OVERLAY_HIDE, CONTENT_OVERLAY_SHOW } from '@/lib/events';
@@ -54,6 +55,7 @@ const LOGO_LINK_CLASS = 'flex items-center gap-2 font-medium text-zinc-900 trans
 /**
  * Two fixed glass navs (mobile `lg:hidden`, desktop `hidden lg:block`), shown after 100 px of scroll. Both carry the
  * compact "Book a call" pill (in the bar itself on mobile, not inside the menu); it is left out on the booking page.
+ * The desktop nav also carries the X follow link ("Follow") just before the pill; the mobile bar keeps only the pill.
  */
 export function GlassHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -62,7 +64,7 @@ export function GlassHeader() {
   const navRef = useRef<HTMLElement>(null);
   const activeSection = useActiveSection();
   const pathname = usePathname();
-  const { profile, cta } = siteContent;
+  const { profile, cta, follow } = siteContent;
   const onBookingPage = pathname.replace(/\/+$/, '') === cta.href;
 
   useEffect(() => {
@@ -207,6 +209,18 @@ export function GlassHeader() {
               );
             })}
           </ul>
+          {/* desktop only: the X follow link in the nav items' own style, just before the booking pill */}
+          <a
+            href={follow.x.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={follow.x.label}
+            data-ph-capture-attribute-cta="follow-x-header"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-medium text-zinc-600 transition-colors hover:bg-zinc-200/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/80 dark:hover:text-zinc-100"
+          >
+            <BrandIcon label={follow.x.name} className="size-3" />
+            {follow.shortLabel}
+          </a>
           {!onBookingPage && <BookCallButton position="header" size="nav" />}
         </div>
       </nav>

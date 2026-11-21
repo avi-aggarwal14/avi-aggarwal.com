@@ -5,8 +5,9 @@ import { mdxComponents } from '@/components/blog/mdx-components';
 import { ReadingProgress } from '@/components/blog/ReadingProgress';
 import { CopyUrlButton } from '@/components/blog/CopyUrlButton';
 import { BlogEndCta } from '@/components/cta/BlogEndCta';
+import { BlogMidCta } from '@/components/cta/BlogMidCta';
 import { siteContent } from '@/content/site-content';
-import { findPost, formatPostDate, originalLine, postDateTime, publishedPosts, readPostMetaSync, readPostSource, slugOf, stripFrontmatter, type PostFrontmatter } from '@/lib/blog';
+import { findPost, formatPostDate, originalLine, postDateTime, publishedPosts, readPostMetaSync, readPostSource, slugOf, stripFrontmatter, withMidCta, type PostFrontmatter } from '@/lib/blog';
 import { blogPostingJsonLdHtml } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site-url';
 
@@ -25,11 +26,12 @@ async function loadPost(slug: string) {
   if (!post) return null;
   const source = await readPostSource(slug);
   if (!source) return null;
-  // compileMDX renders the body; the front matter is read as plain strings (same parser as the markdown twin and the sitemap)
+  // compileMDX renders the body with the middle booking row inserted at render time (the file stays as written);
+  // the front matter is read as plain strings (same parser as the markdown twin and the sitemap)
   const { content } = await compileMDX({
-    source,
+    source: withMidCta(source, '<BlogMidCta />'),
     options: { parseFrontmatter: true },
-    components: mdxComponents,
+    components: { ...mdxComponents, BlogMidCta },
   });
   const frontmatter = stripFrontmatter(source).frontmatter as PostFrontmatter;
   return { post, content, frontmatter };

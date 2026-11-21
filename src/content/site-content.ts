@@ -76,6 +76,9 @@ export interface BlogPost {
 
 export interface SocialLink { id: string; label: string; link: string; keywords: string[] }
 
+/** One network to follow: name ("X") for inline links, label ("Follow on X") for buttons, the follow URL, the handle and the palette row. */
+export interface FollowTarget { name: string; label: string; href: string; handle: string; commandBarTitle: string; keywords: string[] }
+
 export type ThemeId = 'system' | 'light' | 'dark' | 'sunny' | 'rain' | 'night';
 
 export interface CustomTheme {
@@ -124,23 +127,46 @@ export interface SiteContent {
   volunteering: VolunteeringEntry[];
   awards: AwardEntry[];
   locations: Record<string, Location>;
-  /** introLinkText is the leading part of intro that links to cta.href; the email link follows */
+  /** introLinkText is the leading part of intro that links to cta.href; the email link follows. links are pill labels: cta.label first, then follow labels or socials[].label */
   connect: { intro: string; introLinkText: string; email: string; links: string[] };
-  /** Every "Book a call" string. href is the one booking route; components read it from here and never hard-code it. */
+  /**
+   * Every "Book a call" string. href is the one booking route; components read it from here and never hard-code it.
+   * Strings marked "template" contain {x} and {instagram} once each; FollowLine renders those as follow links.
+   */
   cta: {
     href: `/${string}`;
     label: string;
-    /** sentence rendered right after profile.about, linked to href */
+    /** template: sentence rendered right after profile.about; bioLinkText is its leading part, linked to href */
     bio: string;
+    bioLinkText: string;
     /** slim one-line rows rendered after these homepage sections (never directly before Connect) */
     between: { after: SectionId; text: string }[];
-    /** closing block after Connect, before the footer */
-    end: { title: string; text: string };
+    /** the last tile of the Projects grid */
+    projectsTile: { title: string; text: string };
+    /** closing block after Connect, before the footer; follow is a template line under its button */
+    end: { title: string; text: string; follow: string };
+    /** row inserted at the middle of every post (same style as the between rows) */
+    blogMid: string;
     /** line under every post, followed by the button */
     blogEnd: string;
+    /** line after the post ending, followed by the two follow buttons */
+    blogEndFollow: string;
+    /** template: line under the booking page's open-in-new-tab link */
+    callFollow: string;
+    /** the live clock under the hero cluster: IANA zone and a "{time} in London" line */
+    localTime: { timeZone: string; text: string };
     /** the first palette result; keywords extend the booking social's own */
     commandBar: { subtitle: string; keywords: string[] };
   };
+  /** Grow X and Instagram: the follow targets, the short "Follow" label (header, floating dock) and the X card after a homepage section. */
+  follow: {
+    shortLabel: string;
+    card: { after: SectionId; title: string; text: string };
+    x: FollowTarget;
+    instagram: FollowTarget;
+  };
+  /** retired paths that redirect permanently (308) to a live one; next.config.ts reads this list */
+  redirects: { source: string; destination: string }[];
   /** "{year}" is replaced with the current year; credit renders under the control bar in the same muted style; socials is the icon row next to it */
   footer: { copyright: string; credit?: { text: string; url: string }; socials: string[] };
   /** visitedCountries is a GeoJSON file built from map.visitedCountryCodes (scripts/gen-visited-countries.mjs) */
@@ -204,7 +230,7 @@ export const siteContent: SiteContent = {
     name: "Avi Aggarwal",
     handle: "aviaggarwal",
     role: "Founder",
-    about: "I'm 15, and I build things. I run hypjam, a UGC agency in London, and I co-founded Yummers, a food app. I spent a week with Cluely's marketing team in New York and worked as a founding engineer at 8x. I also wrote dare-mcp-server, an open-source MCP server that lets Claude generate AI video. Outside tech, I'm one of Barnet's two elected Youth Ambassadors, and in October the borough's head teachers agreed to start testing my financial education resources in their schools.",
+    about: "I'm 15, and I build things. I run hypjam, a UGC agency in London, and I co-founded Yummers, a food app. I spent a week with Cluely's marketing team in New York and worked as a founding engineer at 8x. I also wrote dare-mcp-server, an open-source MCP server that lets Claude generate AI video.",
     email: "avi@hypjam.com",
     avatar: "/profile.png",
     wordmark: "/generated/aviaggarwal.svg",
@@ -372,7 +398,6 @@ export const siteContent: SiteContent = {
       "projects",
       "education",
       "writing",
-      "talks",
       "volunteering",
       "awards",
       "actions",
@@ -383,7 +408,6 @@ export const siteContent: SiteContent = {
       work: "Work",
       education: "Education",
       blogpost: "Writing",
-      talks: "Talks",
       volunteering: "Volunteering",
       awards: "Awards",
       project: "Projects",
@@ -398,7 +422,6 @@ export const siteContent: SiteContent = {
       "projects",
       "education",
       "writing",
-      "talks",
       "volunteering",
       "awards",
       "connect"
@@ -408,7 +431,6 @@ export const siteContent: SiteContent = {
       "projects",
       "education",
       "writing",
-      "talks",
       "volunteering"
     ],
     showMoreThreshold: 3,
@@ -601,7 +623,7 @@ export const siteContent: SiteContent = {
         },
         {
           url: "/call",
-          logo: "/icons/calendar.svg",
+          logo: "/icons/phone.svg",
           label: "Book a call"
         }
       ],
@@ -699,10 +721,10 @@ export const siteContent: SiteContent = {
       end: "",
       link: "https://www.qebarnet.co.uk",
       logo: "/icons/qe.png",
-      locationId: "barnet",
+      locationId: "qe-school",
       keywords: [
         "queen elizabeth's school",
-        "qe barnet",
+        "qe",
         "school",
         "london"
       ],
@@ -733,22 +755,6 @@ export const siteContent: SiteContent = {
   ],
   research: [],
   writing: [
-    {
-      uid: "blog-4",
-      title: "How I met Rishi Sunak at Parliament",
-      description: "PMQs, a coffee shop and a debate on saving the UK Youth Parliament's funding. The day I met the former Prime Minister at Westminster.",
-      link: "/blog/how-i-met-rishi-sunak",
-      date: "Oct 2026",
-      wip: false,
-      keywords: [
-        "rishi sunak",
-        "parliament",
-        "pmqs",
-        "westminster",
-        "uk youth parliament",
-        "youth ambassador"
-      ]
-    },
     {
       uid: "blog-3",
       title: "What my AI agents do while I'm in lessons",
@@ -796,100 +802,8 @@ export const siteContent: SiteContent = {
       ]
     }
   ],
-  talks: [
-    {
-      id: "talk5",
-      event: "Barnet Youth Board",
-      title: "Co-chair, Corporate Plan session",
-      date: "Nov 2026",
-      link: "https://www.barnet.gov.uk/young-people/my-say-matters/get-involved-my-say-matters",
-      logo: "/icons/barnet.png",
-      locationId: "barnet-council",
-      wip: true,
-      keywords: [
-        "barnet youth board",
-        "corporate plan",
-        "chair",
-        "youth voice"
-      ]
-    },
-    {
-      id: "talk4",
-      event: "Barnet secondary PSHE network",
-      title: "Financial education in Barnet secondary schools",
-      date: "Oct 2026",
-      link: "https://www.bels.org.uk",
-      logo: "/icons/barnet.png",
-      locationId: "saracens-high",
-      wip: true,
-      keywords: [
-        "pshe",
-        "financial literacy",
-        "financial education",
-        "barnet schools",
-        "presentation",
-        "youth ambassador"
-      ]
-    },
-    {
-      id: "talk3",
-      event: "Barnet head teachers' meeting",
-      title: "Financial education in Barnet schools",
-      date: "Oct 2026",
-      link: "https://www.bels.org.uk",
-      logo: "/icons/barnet.png",
-      locationId: "barnet-council",
-      wip: false,
-      keywords: [
-        "head teachers",
-        "barnet schools",
-        "financial education",
-        "financial literacy",
-        "presentation",
-        "youth ambassador",
-        "bels"
-      ]
-    },
-    {
-      id: "talk2",
-      event: "Barnet Children and Education Scrutiny Committee",
-      title: "Financial literacy in secondary schools",
-      date: "Jun 2026",
-      link: "https://barnet.moderngov.co.uk/mgAi.aspx?ID=49273",
-      logo: "/icons/barnet.png",
-      locationId: "hendon-town-hall",
-      wip: false,
-      keywords: [
-        "barnet council",
-        "scrutiny committee",
-        "financial literacy",
-        "hendon town hall",
-        "councillors"
-      ]
-    }
-  ],
+  talks: [],
   volunteering: [
-    {
-      id: "volunteer4",
-      organization: "London Borough of Barnet",
-      title: "Youth Ambassador",
-      start: "Mar 2026",
-      end: "Present",
-      link: "https://www.barnet.gov.uk/young-people/youth-and-democracy/2026-2028-barnet-youth-ambassador-and-uk-youth-parliament",
-      logo: "/icons/barnet.png",
-      locationId: "barnet-council",
-      description: "Elected to get financial education into Barnet schools",
-      keywords: [
-        "youth ambassador",
-        "barnet council",
-        "financial education",
-        "financial literacy",
-        "pshe",
-        "youth voice",
-        "campaign"
-      ],
-      wip: false
-    },
     {
       id: "volunteer2",
       organization: "VEX Robotics, team 20785R",
@@ -898,7 +812,7 @@ export const siteContent: SiteContent = {
       end: "May 2026",
       link: "https://www.vexrobotics.com",
       logo: "/icons/vex.png",
-      locationId: "barnet",
+      locationId: "qe-school",
       description: "Managed the team to awards at Nationals and Worlds",
       keywords: [
         "vex robotics",
@@ -918,7 +832,7 @@ export const siteContent: SiteContent = {
       end: "Dec 2025",
       link: "https://www.qebarnet.co.uk",
       logo: "/icons/qe.png",
-      locationId: "barnet",
+      locationId: "qe-school",
       description: "Student society for AI and programming at my school",
       keywords: [
         "elizabethan ai society",
@@ -984,7 +898,7 @@ export const siteContent: SiteContent = {
       end: "Jan 2025",
       link: "https://www.bebras.uk",
       logo: "/icons/bebras.png",
-      locationId: "barnet",
+      locationId: "qe-school",
       keywords: [
         "bebras",
         "computational thinking",
@@ -1015,35 +929,8 @@ export const siteContent: SiteContent = {
         longitude: -74.0018
       }
     },
-    "barnet-council": {
-      id: "barnet-council",
-      city: "London",
-      country: "United Kingdom",
-      coordinates: {
-        latitude: 51.5976,
-        longitude: -0.245
-      }
-    },
-    "hendon-town-hall": {
-      id: "hendon-town-hall",
-      city: "London",
-      country: "United Kingdom",
-      coordinates: {
-        latitude: 51.58752,
-        longitude: -0.22955
-      }
-    },
-    "saracens-high": {
-      id: "saracens-high",
-      city: "London",
-      country: "United Kingdom",
-      coordinates: {
-        latitude: 51.60322,
-        longitude: -0.2429
-      }
-    },
-    barnet: {
-      id: "barnet",
+    "qe-school": {
+      id: "qe-school",
       city: "London",
       country: "United Kingdom",
       coordinates: {
@@ -1084,8 +971,8 @@ export const siteContent: SiteContent = {
     email: "avi@hypjam.com",
     links: [
       "Book a call",
-      "X",
-      "Instagram",
+      "Follow on X",
+      "Follow on Instagram",
       "TikTok",
       "LinkedIn",
       "Github",
@@ -1096,26 +983,39 @@ export const siteContent: SiteContent = {
   cta: {
     href: "/call",
     label: "Book a call",
-    bio: "Book a call with me anytime.",
+    bio: "Book a call with me anytime, or follow me on {x} and {instagram}.",
+    bioLinkText: "Book a call with me anytime",
     between: [
       {
         after: "work",
         text: "Want to talk about any of this?"
       },
       {
-        after: "projects",
+        after: "education",
         text: "Building something? I'd love to hear about it."
       },
       {
-        after: "talks",
+        after: "writing",
         text: "Got a question? It's quicker on a call."
       }
     ],
+    projectsTile: {
+      title: "Down to talk?",
+      text: "I'm always down for a call about startups, AI or marketing."
+    },
     end: {
       title: "That's pretty much everything.",
-      text: "If anything on here caught your eye, book a call with me. Pick a time that works for you."
+      text: "If anything on here caught your eye, book a call with me. Pick a time that works for you.",
+      follow: "Or follow me on {x} and {instagram}."
     },
+    blogMid: "Want to chat about this? Book a call with me anytime.",
     blogEnd: "Thanks for reading. If you want to talk about this (or anything else), book a call with me.",
+    blogEndFollow: "If you liked this, I post more on X and Instagram.",
+    callFollow: "While you're here, follow me on {x} and {instagram}.",
+    localTime: {
+      timeZone: "Europe/London",
+      text: "{time} in London"
+    },
     commandBar: {
       subtitle: "Pick a time to talk",
       keywords: [
@@ -1127,6 +1027,40 @@ export const siteContent: SiteContent = {
         "talk",
         "calendar",
         "contact"
+      ]
+    }
+  },
+  follow: {
+    shortLabel: "Follow",
+    card: {
+      after: "projects",
+      title: "I post what I'm building on X",
+      text: "Updates on hypjam and whatever I'm building next."
+    },
+    x: {
+      name: "X",
+      label: "Follow on X",
+      href: "https://x.com/intent/follow?screen_name=_avi_md",
+      handle: "@_avi_md",
+      commandBarTitle: "Follow me on X",
+      keywords: [
+        "x",
+        "twitter",
+        "follow",
+        "tweets"
+      ]
+    },
+    instagram: {
+      name: "Instagram",
+      label: "Follow on Instagram",
+      href: "https://www.instagram.com/_avi.md/",
+      handle: "@_avi.md",
+      commandBarTitle: "Follow me on Instagram",
+      keywords: [
+        "instagram",
+        "insta",
+        "ig",
+        "follow"
       ]
     }
   },
@@ -1144,6 +1078,12 @@ export const siteContent: SiteContent = {
       "Github"
     ]
   },
+  redirects: [
+    {
+      source: "/blog/how-i-met-rishi-sunak",
+      destination: "/"
+    }
+  ],
   map: {
     maplibreVersion: "6.10.0",
     styles: {
@@ -1160,8 +1100,6 @@ export const siteContent: SiteContent = {
   },
   hero: {
     socials: [
-      "X",
-      "Instagram",
       "TikTok",
       "LinkedIn",
       "Github"
@@ -1217,7 +1155,6 @@ export const siteContent: SiteContent = {
       "yummers.png",
       "qe.png",
       "oxford.svg",
-      "barnet.png",
       "vex.png",
       "bebras.png",
       "ugc.svg"

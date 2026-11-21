@@ -2,16 +2,21 @@ import { siteContent } from '@/content/site-content';
 import { publishedPosts } from '@/lib/blog';
 import { SITE_URL } from '@/lib/site-url';
 
-/** llms.txt: the booking line, primary markdown alternate, the writing list (markdown twins), discovery links and the use policy. */
+/** llms.txt: the booking and follow lines, primary markdown alternate, the writing list (markdown twins), discovery links and the use policy. */
 export function GET() {
-  const { site, profile, cta } = siteContent;
+  const { site, profile, cta, follow, socials } = siteContent;
   const summary = site.description.replace(new RegExp(`^${profile.name} is (a |an |the )?`), '');
+  // the follow lines point at the profiles (the intent URL is for buttons, not for a text file)
+  const x = socials.find((s) => s.id === 'social-x');
+  const instagram = socials.find((s) => s.id === 'social-instagram');
   const lines = [
     `# ${site.title}`,
     '',
     `> ${summary.charAt(0).toUpperCase()}${summary.slice(1)}`,
     '',
     `${cta.label}: ${SITE_URL}${cta.href}`,
+    ...(x ? [`${follow.x.label}: ${x.link}`] : []),
+    ...(instagram ? [`${instagram.label}: ${instagram.link}`] : []),
     '',
     '## Primary Markdown',
     '',

@@ -179,41 +179,130 @@ if (missing.size) throw new Error(`missing files:\n  ${[...missing].join('\n  ')
   fs.writeFileSync(`public/${seo.indexNowKey}.txt`, seo.indexNowKey);
 }
 
-// Book a call (CTA-BRIEF): one href for every booking link, copy for each placement, and the Connect intro's linked lead.
+// Book a call (CTA-BRIEF, CTA2-BRIEF): one href for every booking link, copy for each placement, the Connect intro's
+// linked lead, the follow block (the X follow intent and the Instagram profile) and the retired-path redirects.
 {
-  const { cta, connect, socials } = data;
+  const { cta, connect, socials, follow, redirects } = data;
   const str = (v, where) => {
     if (typeof v !== 'string' || !v.trim()) throw new Error(`${where} is required`);
+  };
+  const list = (v, where) => {
+    if (!Array.isArray(v) || v.length === 0 || v.some((k) => typeof k !== 'string' || !k)) throw new Error(`${where} must be a non-empty list of strings`);
+  };
+  // a sentence that names both networks: {x} and {instagram} once each, rendered as follow links by FollowLine
+  const template = (v, where) => {
+    str(v, where);
+    for (const key of ['{x}', '{instagram}']) if (v.split(key).length !== 2) throw new Error(`${where} must contain ${key} exactly once`);
+  };
+  // a block placed after a homepage section: a real content section, never directly before Connect
+  const contentSection = (id, where) => {
+    const i = order.indexOf(id);
+    if (i === -1 || id === 'about' || id === 'connect') throw new Error(`${where}: "${id}" is not a content section in sections.order`);
+    if (order[i + 1] === 'connect') throw new Error(`${where}: a block after "${id}" would sit directly before Connect`);
   };
   if (!cta || typeof cta !== 'object') throw new Error('cta block is required');
   if (typeof cta.href !== 'string' || !/^\/[a-z0-9-]+$/.test(cta.href)) throw new Error('cta.href must be an internal path such as "/call"');
   str(cta.label, 'cta.label');
-  str(cta.bio, 'cta.bio');
+  template(cta.bio, 'cta.bio');
+  str(cta.bioLinkText, 'cta.bioLinkText');
+  if (!cta.bio.startsWith(cta.bioLinkText)) throw new Error('cta.bioLinkText must be the leading part of cta.bio');
   if (!Array.isArray(cta.between) || cta.between.length === 0) throw new Error('cta.between must list the between-section rows');
   const seenAfter = new Set();
   for (const row of cta.between) {
     str(row.text, 'cta.between[].text');
-    const i = order.indexOf(row.after);
-    if (i === -1 || row.after === 'about' || row.after === 'connect') throw new Error(`cta.between: "${row.after}" is not a content section in sections.order`);
-    if (order[i + 1] === 'connect') throw new Error(`cta.between: a row after "${row.after}" would sit directly before Connect`);
+    contentSection(row.after, 'cta.between');
     if (seenAfter.has(row.after)) throw new Error(`cta.between: two rows after "${row.after}"`);
     seenAfter.add(row.after);
   }
+  str(cta.projectsTile?.title, 'cta.projectsTile.title');
+  str(cta.projectsTile?.text, 'cta.projectsTile.text');
+  if (!order.includes('projects')) throw new Error('cta.projectsTile needs the projects section in sections.order');
   str(cta.end?.title, 'cta.end.title');
   str(cta.end?.text, 'cta.end.text');
+  template(cta.end?.follow, 'cta.end.follow');
+  str(cta.blogMid, 'cta.blogMid');
   str(cta.blogEnd, 'cta.blogEnd');
+  str(cta.blogEndFollow, 'cta.blogEndFollow');
+  template(cta.callFollow, 'cta.callFollow');
+  str(cta.localTime?.timeZone, 'cta.localTime.timeZone');
+  try {
+    new Intl.DateTimeFormat('en-GB', { timeZone: cta.localTime.timeZone });
+  } catch {
+    throw new Error(`cta.localTime.timeZone: "${cta.localTime.timeZone}" is not an IANA time zone`);
+  }
+  str(cta.localTime?.text, 'cta.localTime.text');
+  if (cta.localTime.text.split('{time}').length !== 2) throw new Error('cta.localTime.text must contain {time} exactly once');
   str(cta.commandBar?.subtitle, 'cta.commandBar.subtitle');
-  if (!Array.isArray(cta.commandBar?.keywords) || cta.commandBar.keywords.some((k) => typeof k !== 'string' || !k)) throw new Error('cta.commandBar.keywords must be a list of strings');
+  list(cta.commandBar?.keywords, 'cta.commandBar.keywords');
+  // follow: where "Follow" goes (the X follow intent, the Instagram profile), the labels and handles, the X card's place
+  if (!follow || typeof follow !== 'object') throw new Error('follow block is required');
+  str(follow.shortLabel, 'follow.shortLabel');
+  str(follow.card?.title, 'follow.card.title');
+  str(follow.card?.text, 'follow.card.text');
+  contentSection(follow.card?.after, 'follow.card');
+  if (seenAfter.has(follow.card.after)) throw new Error(`follow.card: "${follow.card.after}" already carries a booking row`);
+  const xSocial = socials.find((s) => s.id === 'social-x');
+  const igSocial = socials.find((s) => s.id === 'social-instagram');
+  if (!xSocial || !igSocial) throw new Error('socials: social-x and social-instagram are required (the profile links behind the icons, llms.txt and index.md)');
+  for (const [key, host, social] of [['x', 'x.com', xSocial], ['instagram', 'www.instagram.com', igSocial]]) {
+    const t = follow[key];
+    const where = `follow.${key}`;
+    if (!t || typeof t !== 'object') throw new Error(`${where} is required`);
+    for (const k of ['name', 'label', 'href', 'handle', 'commandBarTitle']) str(t[k], `${where}.${k}`);
+    list(t.keywords, `${where}.keywords`);
+    let url;
+    try {
+      url = new URL(t.href);
+    } catch {
+      throw new Error(`${where}.href is not a URL`);
+    }
+    if (url.protocol !== 'https:' || url.hostname !== host) throw new Error(`${where}.href must be an https ${host} URL`);
+    if (!t.handle.startsWith('@')) throw new Error(`${where}.handle must start with @`);
+    if (t.name !== social.label) throw new Error(`${where}.name must match the ${social.id} label ("${social.label}")`);
+  }
+  if (!/^https:\/\/x\.com\/intent\/follow\?screen_name=[A-Za-z0-9_]+$/.test(follow.x.href)) throw new Error('follow.x.href must be the X follow intent (https://x.com/intent/follow?screen_name=...)');
+  if (follow.x.href.split('screen_name=')[1] !== follow.x.handle.slice(1)) throw new Error('follow.x.handle must be the screen_name of follow.x.href');
+  if (follow.instagram.href !== igSocial.link) throw new Error('follow.instagram.href must equal the Instagram social link');
+  // Connect pills: the booking pill first, then labels that resolve to the follow block or a social
   str(connect.introLinkText, 'connect.introLinkText');
   if (!connect.intro.startsWith(connect.introLinkText)) throw new Error('connect.introLinkText must be the leading part of connect.intro');
   const booking = socials.find((s) => s.link === cta.href);
   if (!booking || booking.label !== cta.label) throw new Error(`socials: one entry must link to ${cta.href} and be labelled "${cta.label}" (it is the first Connect pill)`);
   if (connect.links[0] !== cta.label) throw new Error(`connect.links: "${cta.label}" must be the first pill`);
+  const pillLabels = new Set([cta.label, follow.x.label, follow.instagram.label, ...socials.map((s) => s.label)]);
+  for (const label of connect.links) if (!pillLabels.has(label)) throw new Error(`connect.links: "${label}" is neither a social label nor a follow label`);
+  if (new Set(connect.links).size !== connect.links.length) throw new Error('connect.links: duplicate labels');
   if (data.profile.meetRedirect !== cta.href) throw new Error(`profile.meetRedirect must be ${cta.href} so /meet lands on the booking page`);
   str(data.seo?.personDescription, 'seo.personDescription');
+  // retired paths (removed posts) redirect permanently instead of 404ing; next.config.ts reads this list
+  if (!Array.isArray(redirects)) throw new Error('redirects must be a list (empty for none)');
+  const sources = new Set();
+  const liveLinks = new Set(data.writing.filter((p) => !p.wip).map((p) => p.link));
+  for (const r of redirects) {
+    if (typeof r.source !== 'string' || !/^\/[a-z0-9/-]+$/.test(r.source)) throw new Error(`redirects: bad source ${JSON.stringify(r.source)}`);
+    if (typeof r.destination !== 'string' || !/^\/[a-z0-9/-]*$/.test(r.destination)) throw new Error(`redirects/${r.source}: destination must be an internal path`);
+    if (r.source === r.destination) throw new Error(`redirects/${r.source}: points at itself`);
+    if (liveLinks.has(r.source) || r.source === cta.href) throw new Error(`redirects/${r.source}: that path is live`);
+    if (sources.has(r.source)) throw new Error(`redirects: duplicate source ${r.source}`);
+    sources.add(r.source);
+  }
   // every booking link goes through cta.href; Cal.com itself is embedded only by src/app/call/page.tsx
   const calUrl = /https?:\/\/(app\.)?cal\.com/i.exec(JSON.stringify(data));
   if (calUrl) throw new Error(`content links to cal.com directly (${calUrl[0]}...); use ${cta.href}`);
+}
+
+// Tech only (CTA2-BRIEF section 1): nothing political anywhere in the shipped content. "Barnet" may appear only inside
+// the school name (the school's own hostname, qebarnet, is not the word).
+{
+  // retired paths keep their old slugs (that is the point of a redirect); everything else ships and is scanned
+  const { redirects: retired, ...shipped } = data;
+  void retired;
+  const text = JSON.stringify(shipped).replace(/Queen Elizabeth's School, Barnet/g, 'QE SCHOOL');
+  const banned =[/youth ambassador/i, /youth board/i, /parliament/i, /rishi|sunak/i, /westminster/i, /\bcouncil/i, /scrutiny/i, /\bpshe\b/i, /head ?teacher/i, /financial (education|literacy)/i, /\bbels\b/i, /\bbarnet\b/i];
+  for (const re of banned) {
+    const m = re.exec(text);
+    if (m) throw new Error(`"${m[0]}" found in ${SRC}: the site is tech only, political content stays out`);
+  }
 }
 
 // No em dash (U+2014) anywhere in the shipped content (the character is built from its code point so this script passes the same grep).
@@ -240,7 +329,7 @@ data.assets = {
   // colour logos and dark tiles keep their colours in dark mode; monochrome black logos get dark:invert
   logoNoInvert: [
     'npm.svg', 'hypjam.svg', 'cluely.png', 'gtmcakes.png', 'yummers.png', 'qe.png',
-    'oxford.svg', 'barnet.png', 'vex.png', 'bebras.png', 'ugc.svg',
+    'oxford.svg', 'vex.png', 'bebras.png', 'ugc.svg',
   ],
   logoNoCorner: [],
   logoRoundFull: [],
@@ -328,6 +417,9 @@ export interface BlogPost {
 
 export interface SocialLink { id: string; label: string; link: string; keywords: string[] }
 
+/** One network to follow: name ("X") for inline links, label ("Follow on X") for buttons, the follow URL, the handle and the palette row. */
+export interface FollowTarget { name: string; label: string; href: string; handle: string; commandBarTitle: string; keywords: string[] }
+
 export type ThemeId = 'system' | 'light' | 'dark' | 'sunny' | 'rain' | 'night';
 
 export interface CustomTheme {
@@ -376,23 +468,46 @@ export interface SiteContent {
   volunteering: VolunteeringEntry[];
   awards: AwardEntry[];
   locations: Record<string, Location>;
-  /** introLinkText is the leading part of intro that links to cta.href; the email link follows */
+  /** introLinkText is the leading part of intro that links to cta.href; the email link follows. links are pill labels: cta.label first, then follow labels or socials[].label */
   connect: { intro: string; introLinkText: string; email: string; links: string[] };
-  /** Every "Book a call" string. href is the one booking route; components read it from here and never hard-code it. */
+  /**
+   * Every "Book a call" string. href is the one booking route; components read it from here and never hard-code it.
+   * Strings marked "template" contain {x} and {instagram} once each; FollowLine renders those as follow links.
+   */
   cta: {
     href: \`/\${string}\`;
     label: string;
-    /** sentence rendered right after profile.about, linked to href */
+    /** template: sentence rendered right after profile.about; bioLinkText is its leading part, linked to href */
     bio: string;
+    bioLinkText: string;
     /** slim one-line rows rendered after these homepage sections (never directly before Connect) */
     between: { after: SectionId; text: string }[];
-    /** closing block after Connect, before the footer */
-    end: { title: string; text: string };
+    /** the last tile of the Projects grid */
+    projectsTile: { title: string; text: string };
+    /** closing block after Connect, before the footer; follow is a template line under its button */
+    end: { title: string; text: string; follow: string };
+    /** row inserted at the middle of every post (same style as the between rows) */
+    blogMid: string;
     /** line under every post, followed by the button */
     blogEnd: string;
+    /** line after the post ending, followed by the two follow buttons */
+    blogEndFollow: string;
+    /** template: line under the booking page's open-in-new-tab link */
+    callFollow: string;
+    /** the live clock under the hero cluster: IANA zone and a "{time} in London" line */
+    localTime: { timeZone: string; text: string };
     /** the first palette result; keywords extend the booking social's own */
     commandBar: { subtitle: string; keywords: string[] };
   };
+  /** Grow X and Instagram: the follow targets, the short "Follow" label (header, floating dock) and the X card after a homepage section. */
+  follow: {
+    shortLabel: string;
+    card: { after: SectionId; title: string; text: string };
+    x: FollowTarget;
+    instagram: FollowTarget;
+  };
+  /** retired paths that redirect permanently (308) to a live one; next.config.ts reads this list */
+  redirects: { source: string; destination: string }[];
   /** "{year}" is replaced with the current year; credit renders under the control bar in the same muted style; socials is the icon row next to it */
   footer: { copyright: string; credit?: { text: string; url: string }; socials: string[] };
   /** visitedCountries is a GeoJSON file built from map.visitedCountryCodes (scripts/gen-visited-countries.mjs) */

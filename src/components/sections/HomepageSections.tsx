@@ -13,6 +13,10 @@ import { CommandBarTrigger } from '@/components/shell/CommandBarTrigger';
 import { BookCallButton, HERO_CTA_ID } from '@/components/cta/BookCallButton';
 import { CtaRow } from '@/components/cta/CtaRow';
 import { EndCta } from '@/components/cta/EndCta';
+import { FollowButton } from '@/components/cta/FollowButton';
+import { FollowCard } from '@/components/cta/FollowCard';
+import { FollowLine } from '@/components/cta/FollowLine';
+import { LocalTime } from '@/components/cta/LocalTime';
 import { TimelineProvider } from '@/components/popups/timeline-context';
 import { asciiBanner } from '@/lib/ascii';
 import type { EntryRowData } from '@/lib/rows';
@@ -47,6 +51,8 @@ const CONTAINER_VARIANTS = {
 
 /** The between-section booking rows, keyed by the section they follow (content decides where; never directly before Connect). */
 const CTA_ROWS = new Map(siteContent.cta.between.map((row, i) => [row.after, { index: i + 1, text: row.text }]));
+/** The X card follows this section (content decides; the generator keeps it off a section that already has a row). */
+const FOLLOW_CARD_AFTER: SectionId = siteContent.follow.card.after;
 
 export function HomepageSections(data: HomepageData) {
   const reduced = Boolean(useReducedMotion());
@@ -68,15 +74,28 @@ export function HomepageSections(data: HomepageData) {
             <div className="flex-1">
               <p className="text-zinc-600 dark:text-zinc-400">
                 {data.about}{' '}
+                {/* the bio ends with the booking link, then the X and Instagram follow links (one sentence in cta.bio) */}
                 <Link href={cta.href} data-ph-capture-attribute-cta="bio" className="underline dark:text-zinc-300">
-                  {cta.bio}
+                  {cta.bioLinkText}
                 </Link>
+                <FollowLine text={cta.bio.slice(cta.bioLinkText.length)} position="bio" />
               </p>
-              {/* the hero button directly under the bio, the social icons on the same row (they wrap under it on narrow screens, first glyph flush with the text edge) */}
-              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3">
-                <BookCallButton id={HERO_CTA_ID} position="hero" magnetic />
+              {/*
+                the hero cluster: the big booking button, the two follow buttons, then the remaining social icons.
+                Phones stack it (full-width booking button, the follow pair sharing the row under it, the icons on their
+                own line); from sm up it is one wrapping row with the first glyph flush with the text edge.
+              */}
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <BookCallButton id={HERO_CTA_ID} position="hero" size="hero" magnetic className="w-full justify-center sm:w-auto" />
+                {/* the follow pair: on phones each grows from its own width (so the longer label never wraps), one row from sm up */}
+                <div className="flex items-center gap-3">
+                  <FollowButton network="x" position="follow-x-hero" size="hero" magnetic wrapperClassName="flex-auto sm:flex-none" className="w-full justify-center sm:w-auto" />
+                  <FollowButton network="instagram" position="follow-ig-hero" size="hero" magnetic wrapperClassName="flex-auto sm:flex-none" className="w-full justify-center sm:w-auto" />
+                </div>
                 <SocialIcons labels={data.heroSocials} className="-ml-2" />
               </div>
+              {/* a real person on the other end: the live local time, rendered after mount (its box is reserved) */}
+              <LocalTime className="mt-4" />
             </div>
           </motion.section>
         );
@@ -102,16 +121,22 @@ export function HomepageSections(data: HomepageData) {
         return null;
     }
   };
-  // a section followed by a booking row shares one wrapper with it, so the row sits 2.25rem under the section
-  // instead of taking its own 5rem slot in the stagger container's space-y-20
+  // a section followed by a booking row or the X card shares one wrapper with it, so the coda sits 2.25rem under the
+  // section instead of taking its own 5rem slot in the stagger container's space-y-20
   const render = (id: SectionId) => {
     const section = renderSection(id);
+    if (!section) return section;
     const row = CTA_ROWS.get(id);
-    if (!section || !row) return section;
+    const coda = row ? (
+      <CtaRow index={row.index} text={row.text} transition={transition} />
+    ) : id === FOLLOW_CARD_AFTER ? (
+      <FollowCard transition={transition} />
+    ) : null;
+    if (!coda) return section;
     return (
       <div key={id}>
         {section}
-        <CtaRow index={row.index} text={row.text} transition={transition} />
+        {coda}
       </div>
     );
   };

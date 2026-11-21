@@ -3,24 +3,28 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { BookCallButton, HERO_CTA_ID } from '@/components/cta/BookCallButton';
+import { FollowButton } from '@/components/cta/FollowButton';
 import { CONTENT_OVERLAY_HIDE, CONTENT_OVERLAY_SHOW } from '@/lib/events';
 import { siteContent } from '@/content/site-content';
 
+/** The dock's buttons lift off the page the same way the old pill did. */
+const DOCK_SHADOW = 'py-2 shadow-xl shadow-black/15 md:py-1.5 dark:shadow-zinc-900/15';
+
 /**
- * The compact booking pill fixed to the bottom of every page except the booking page itself: centred on mobile
- * (above the safe area), bottom-right on md+ and, on the homepage, left of the ⌘K hint. On the homepage it stays
- * hidden while the hero button is on screen and slides in once that has scrolled away, so two identical buttons are
- * never on screen together at the top. Like the ⌘K hint it steps aside while a popup is open. The in-flow spacer
- * keeps the last content and the footer reachable above it.
+ * The small dock fixed to the bottom of every page except the booking page itself: the compact booking pill and a
+ * compact "Follow" (X) button in one row. Centred on mobile (above the safe area), bottom-right on md+ and, on the
+ * homepage, left of the ⌘K hint. On the homepage it stays hidden while the hero button is on screen and slides in
+ * once that has scrolled away, so two booking buttons are never on screen together at the top. Like the ⌘K hint it
+ * steps aside while a popup is open. The in-flow spacer keeps the last content and the footer reachable above it.
  */
 export function FloatingCta() {
   const pathname = usePathname();
   if (pathname.replace(/\/+$/, '') === siteContent.cta.href) return null;
   // keyed by route so the hero state starts fresh on every navigation
-  return <FloatingPill key={pathname} isHome={pathname === '/'} />;
+  return <FloatingDock key={pathname} isHome={pathname === '/'} />;
 }
 
-function FloatingPill({ isHome }: { isHome: boolean }) {
+function FloatingDock({ isHome }: { isHome: boolean }) {
   const reduced = useReducedMotion();
   // on the homepage the hero button is taken to be on screen until the observer reports otherwise (no flash at the top)
   const [heroOnScreen, setHeroOnScreen] = useState(isHome);
@@ -50,7 +54,7 @@ function FloatingPill({ isHome }: { isHome: boolean }) {
   const transition = { duration: reduced ? 0 : 0.3, ease: 'easeOut' as const };
   return (
     <>
-      {/* in flow: room for the pill under the last content and the footer (plus the safe area on phones) */}
+      {/* in flow: room for the dock under the last content and the footer (plus the safe area on phones) */}
       <div aria-hidden="true" className="h-[calc(3.5rem_+_env(safe-area-inset-bottom))]" />
       <div
         data-floating-cta
@@ -66,7 +70,10 @@ function FloatingPill({ isHome }: { isHome: boolean }) {
               exit={{ opacity: 0, y: 16 }}
               transition={transition}
             >
-              <BookCallButton position="floating" size="md" className="py-2 shadow-xl shadow-black/15 md:py-1.5 dark:shadow-zinc-900/15" />
+              <div data-floating-dock className="flex items-center gap-2">
+                <BookCallButton position="floating" size="md" className={DOCK_SHADOW} />
+                <FollowButton network="x" position="follow-x-floating" size="md" short className={DOCK_SHADOW} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

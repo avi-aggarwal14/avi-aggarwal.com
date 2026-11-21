@@ -18,7 +18,8 @@ type CardContainerProps = {
 export function CardContainer({ id, children, padding = 'md', enableSpotlight = true, spotlightSize = 32, className }: CardContainerProps) {
   return (
     <div id={id} className={cn('relative squircle-panel inset-ring inset-ring-zinc-300/30 dark:inset-ring-zinc-600/30', className)}>
-      <div className="relative overflow-hidden rounded-[inherit]">
+      {/* h-full lets a stretched card (the Projects booking tile) fill its grid cell; auto-height cards are unaffected */}
+      <div className="relative h-full overflow-hidden rounded-[inherit]">
         {enableSpotlight && (
           <Spotlight
             size={spotlightSize}
